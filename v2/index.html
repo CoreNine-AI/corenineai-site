@@ -1,167 +1,284 @@
-<!doctype html>
-<html lang="ko">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>지능의 시대 — CoreNine AI</title>
-<meta name="description" content="지능의 시대. 뉴럴 네트워크에서 자율 에이전트까지, 인공지능이 세계를 다시 쓰는 방식을 시네마틱 3D로 풀어낸 인터랙티브 여정.">
-<meta name="theme-color" content="#06060a">
-<meta property="og:title" content="지능의 시대 — CoreNine AI">
-<meta property="og:description" content="인공지능이 세계를 다시 쓰는 방식.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CoreNine AI — Work in Motion</title>
+<meta name="description" content="CoreNine AI — an AI transformation studio. We teach teams to work with AI and build automation that runs the day after. A 30,000-point particle field follows your scroll.">
 <meta property="og:type" content="website">
-<link rel="stylesheet" href="./css/app.css">
-<script type="importmap">
-{ "imports": { "three": "./lib/three.module.min.js" } }
-</script>
+<meta property="og:site_name" content="CoreNine AI">
+<meta property="og:title" content="CoreNine AI — Work in Motion">
+<meta property="og:description" content="AI education and workflow automation, rendered as a 30,000-point particle field.">
+<meta property="og:url" content="https://corenineai.com/v2/index.html">
+<meta name="theme-color" content="#f1efe9">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="./lib/three.r128.min.js"></script>
+<style>
+  html { scroll-behavior: smooth; }
+  body { margin:0; background:#f1efe9; color:#161310; font-family:'Syne',sans-serif; overflow-x:hidden; }
+  a { color:#161310; text-decoration:none; }
+  a:hover { color:#ff4d00; }
+  ::selection { background:#ff4d00; color:#f1efe9; }
+  @keyframes voltaPulse { 0%,100%{opacity:.9} 50%{opacity:.25} }
+  .row-link { display:grid; grid-template-columns:70px 1fr auto; gap:24px; align-items:baseline; padding:30px 0; border-top:1px solid #cfc9bd; transition:padding-left .35s cubic-bezier(.2,.8,.2,1), color .2s; }
+  .row-link:hover { padding-left:28px; color:#ff4d00; }
+  .row-link .num { font-family:'IBM Plex Mono',monospace; font-size:12px; color:#7a746a; }
+  .row-link .name { font-weight:700; font-size:clamp(28px,4vw,54px); letter-spacing:-0.01em; text-transform:uppercase; }
+  .row-link .tag { font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.1em; color:#7a746a; }
+  @media (max-width:720px){
+    header, main > section { padding-left:24px !important; padding-right:24px !important; }
+    header { padding-top:20px !important; padding-bottom:0 !important; flex-wrap:wrap; gap:10px; }
+    header .brand-mark { font-size:17px !important; }
+    .hud { right:24px !important; }
+    .row-link { grid-template-columns:48px 1fr; }
+    .row-link .tag { grid-column:2; }
+    nav.top { gap:16px !important; font-size:11px !important; }
+    h1 { font-size:clamp(44px,14vw,220px) !important; }
+    .contact-huge { font-size:clamp(38px,11.5vw,170px) !important; }
+  }
+</style>
 </head>
 <body>
 
-<div class="grain" aria-hidden="true"></div>
-<div class="cursor" aria-hidden="true"></div>
-<div class="cursor-ring" aria-hidden="true"></div>
+<div id="volta-canvas" style="position:fixed; inset:0; z-index:0;"></div>
 
-<!-- preloader -->
-<div class="preloader" aria-hidden="true">
-  <div class="pl-brand">CoreNine AI</div>
-  <div class="pl-word"><span>INTELLIGENCE</span></div>
-  <div class="pl-count">00</div>
-  <div class="pl-bar"></div>
-</div>
-
-<!-- fixed WebGL stage -->
-<canvas id="stage"></canvas>
-
-<!-- studio frame -->
-<div class="frame" aria-hidden="true">
-  <div class="edge"></div>
-  <span class="plus tl"></span><span class="plus tr"></span>
-  <span class="plus bl"></span><span class="plus br"></span>
-  <div class="scroll-lbl"><span>Scroll</span><span class="bar"></span></div>
-</div>
-
-<!-- nav -->
-<header class="nav">
-  <a class="brand" href="./index.html"><span class="n9">9</span>CoreNine AI</a>
-  <div class="n-right">
-    <a class="pill solid" href="./chapters/neural.html" data-cursor="열기" data-mag><span class="dot"></span>챕터 보기</a>
-    <a class="pill" href="../index.html" data-cursor="EXIT" data-mag>메인</a>
-  </div>
+<header style="position:fixed; top:0; left:0; right:0; z-index:20; display:flex; justify-content:space-between; align-items:center; padding:28px 40px;">
+  <div class="brand-mark" style="font-weight:800; font-size:20px; letter-spacing:0.06em;">CORENINE<span style="color:#ff4d00;">*</span></div>
+  <nav class="top" style="display:flex; gap:32px; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em;">
+    <a href="#work">WORK</a>
+    <a href="#studio">STUDIO</a>
+    <a href="#contact">CONTACT</a>
+    <a href="../index.html">MAIN ↗</a>
+  </nav>
 </header>
 
-<!-- scroll-driven scene text -->
-<div class="scenes">
-  <section class="scene center">
-    <div class="sc-inner">
-      <span class="num">01 / 06</span>
-      <span class="kick">인공지능 아카이브 · No.09</span>
-      <h2>지능의 <em>시대</em></h2>
-      <p class="desc">기계가 인간의 언어를 이해하고, 스스로 판단하고, 행동하기 시작했다.
-        <b>인공지능은 더 이상 도구가 아니다.</b></p>
-    </div>
-  </section>
-
-  <section class="scene left">
-    <div class="sc-inner">
-      <span class="num">02 / 06</span>
-      <span class="kick">Chapter 01 · Neural Networks</span>
-      <h2>뉴럴<br>네트워크</h2>
-      <p class="desc">수백만 개의 가중치가 데이터로부터 스스로 패턴을 학습한다.
-        어둠 속에서 빛나는 <b>지능의 가장 작은 벽돌</b>.</p>
-    </div>
-  </section>
-
-  <section class="scene right">
-    <div class="sc-inner">
-      <span class="num">03 / 06</span>
-      <span class="kick">Chapter 02 · Language</span>
-      <h2>언어의<br>흐름</h2>
-      <p class="desc">트랜스포머와 어텐션. 다음 단어를 예측하는 단순한 목표에서
-        <b>추론과 대화</b>가 창발했다.</p>
-    </div>
-  </section>
-
-  <section class="scene left">
-    <div class="sc-inner">
-      <span class="num">04 / 06</span>
-      <span class="kick">Chapter 03 · Multimodal</span>
-      <h2>멀티모달</h2>
-      <p class="desc">텍스트·이미지·소리·영상을 하나의 표현 공간에서 이해하는,
-        <b>감각의 통합</b>.</p>
-    </div>
-  </section>
-
-  <section class="scene right">
-    <div class="sc-inner">
-      <span class="num">05 / 06</span>
-      <span class="kick">Chapter 04 · Agents</span>
-      <h2>자율<br>에이전트</h2>
-      <p class="desc">스스로 계획하고 도구를 쓰고 결과를 검증하는 AI.
-        언어 모델이 <b>손과 발을 얻는 순간</b>.</p>
-    </div>
-  </section>
-
-  <section class="scene center">
-    <div class="sc-inner">
-      <span class="num">06 / 06</span>
-      <span class="kick">The Age of Intelligence</span>
-      <h2>지능을 <em>설계</em>하다</h2>
-      <p class="desc">그것은 새로운 사고의 매질이며, 인간이 세계를 이해하는 방식 자체를 바꾼다.
-        다음 페이지를 쓰는 것은 우리다.</p>
-      <div class="cta"><a class="cta-big" href="./chapters/neural.html" data-cursor="시작" data-mag><span class="dot"></span>여정을 자세히 보기</a></div>
-    </div>
-  </section>
+<div class="hud" style="position:fixed; right:40px; bottom:36px; z-index:20; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#7a746a; display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+  <div>FIELD / <span id="shapeName" style="color:#ff4d00;">SPHERE</span></div>
+  <div><span id="sectionLabel">01</span> — 06</div>
 </div>
 
-<!-- scroll driver -->
-<div class="driver" aria-hidden="true">
-  <div class="seg"></div><div class="seg"></div><div class="seg"></div>
-  <div class="seg"></div><div class="seg"></div><div class="seg"></div>
-</div>
+<main style="position:relative; z-index:10;">
 
-<!-- tail footer -->
-<footer class="tail">
-  <div class="foot">
-    <div class="big">Core<em>Nine</em></div>
-    <div class="row">
-      <div class="cols">
-        <div>
-          <h5>챕터</h5>
-          <a class="lnk" href="./chapters/neural.html">뉴럴 네트워크</a>
-          <a class="lnk" href="./chapters/llm.html">거대 언어 모델</a>
-          <a class="lnk" href="./chapters/agents.html">자율 에이전트</a>
-        </div>
-        <div>
-          <h5>돌아가기</h5>
-          <a class="lnk back-main" href="../index.html">← CoreNine AI 메인</a>
-          <p class="txt">기업용 AI 교육 · 자동화 구축</p>
-        </div>
-      </div>
-      <div class="cols">
-        <div>
-          <h5>아카이브</h5>
-          <p class="txt">지능의 시대 · No.09</p>
-          <p class="txt">Cinematic WebGL Journey</p>
-        </div>
-      </div>
+  <!-- 01 · SPHERE — hero -->
+  <section style="min-height:100vh; display:flex; flex-direction:column; justify-content:flex-end; padding:0 40px 10vh;">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#ff4d00; margin-bottom:20px;" data-reveal>① PARTICLE FIELD — 30,000 POINTS</div>
+    <h1 style="margin:0; font-weight:800; font-size:clamp(64px,13vw,220px); line-height:0.9; letter-spacing:-0.02em; text-transform:uppercase;" data-reveal>Work in<br>Motion</h1>
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:36px; flex-wrap:wrap; gap:20px;" data-reveal>
+      <p style="margin:0; max-width:420px; font-size:17px; line-height:1.6; font-weight:400; color:#4d463d;">CoreNine AI is an AI transformation studio from Seoul. We teach teams to work with AI, then build the automation that runs the day after. Scroll — the field will follow.</p>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; color:#7a746a; animation:voltaPulse 2.4s ease-in-out infinite;">SCROLL ↓</div>
     </div>
-    <div class="base">
-      <span>© 2026 CoreNine AI</span>
-      <span>WebGL · Three.js · Particles / Bloom</span>
-    </div>
-  </div>
-</footer>
+  </section>
 
-<script src="./lib/lenis.min.js"></script>
-<script src="./lib/gsap.min.js"></script>
-<script src="./lib/ScrollTrigger.min.js"></script>
-<script type="module">
-  import { boot } from './js/app.js';
-  import { initScene } from './js/scene.js';
-  let api = null;
-  const canvas = document.getElementById('stage');
-  try { api = initScene(canvas); } catch (e) { console.warn('scene disabled', e); document.body.style.background = '#06060a'; }
-  window.__api = api;
-  window.__lenis = boot(api);
+  <!-- 02 · KNOT — manifesto -->
+  <section id="studio" style="min-height:100vh; display:flex; align-items:center; padding:12vh 40px;">
+    <div style="max-width:1100px;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#ff4d00; margin-bottom:28px;" data-reveal>② THE KNOT</div>
+      <p style="margin:0; font-weight:600; font-size:clamp(30px,4.6vw,64px); line-height:1.15; letter-spacing:-0.015em;" data-reveal>We believe AI is a <span style="color:#ff4d00;">material</span>. We take the tangled, repetitive hours out of your workflow and rebuild them into systems your company owns.</p>
+    </div>
+  </section>
+
+  <!-- 03 · TORUS — what we do -->
+  <section id="work" style="min-height:100vh; padding:14vh 40px;">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#ff4d00; margin-bottom:40px;" data-reveal>③ THE TORUS — WHAT WE DO</div>
+    <div style="display:flex; flex-direction:column;" data-reveal>
+      <a class="row-link" href="../courses.html"><span class="num">001</span><span class="name">AI Education</span><span class="tag">ROLE-BASED / HANDS-ON</span></a>
+      <a class="row-link" href="../build.html"><span class="num">002</span><span class="name">Workflow Automation</span><span class="tag">BUILD &amp; OPERATE</span></a>
+      <a class="row-link" href="../build.html#systems"><span class="num">003</span><span class="name">Document Pipelines</span><span class="tag">EXTRACT / VERIFY / RECORD</span></a>
+      <a class="row-link" href="../cases.html"><span class="num">004</span><span class="name">AI Agents</span><span class="tag">MULTI-STEP OPERATIONS</span></a>
+      <div style="border-top:1px solid #cfc9bd;"></div>
+    </div>
+  </section>
+
+  <!-- 04 · WAVE — how we work -->
+  <section style="min-height:100vh; display:flex; align-items:center; padding:12vh 40px;">
+    <div style="max-width:1100px;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#ff4d00; margin-bottom:28px;" data-reveal>④ THE WAVE — HOW WE WORK</div>
+      <p style="margin:0; font-weight:600; font-size:clamp(30px,4.6vw,64px); line-height:1.15; letter-spacing:-0.015em;" data-reveal>No slide decks. We open your real documents in the first meeting, <span style="color:#ff4d00;">diagnose in days</span>, pilot in weeks — and scale only what the numbers prove.</p>
+    </div>
+  </section>
+
+  <!-- 05 · GRID — proof -->
+  <section style="min-height:100vh; padding:14vh 40px;">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#ff4d00; margin-bottom:40px;" data-reveal>⑤ THE GRID — PROOF</div>
+    <div style="display:flex; flex-direction:column;" data-reveal>
+      <a class="row-link" href="../cases.html"><span class="num">/01</span><span class="name">Weekly Report 40m → 10m</span><span class="tag">EDUCATION OUTCOME</span></a>
+      <a class="row-link" href="../demos/demo2_발주메일_자동입력.html"><span class="num">/02</span><span class="name">Order Entry 4m → 8s</span><span class="tag">LIVE DEMO</span></a>
+      <a class="row-link" href="../demos/demo1_사내문서QA봇.html"><span class="num">/03</span><span class="name">Answers with Sources</span><span class="tag">INTERNAL Q&amp;A BOT</span></a>
+      <a class="row-link" href="../demos/demo4_구축_운영콘솔.html"><span class="num">/04</span><span class="name">Full Audit Trail</span><span class="tag">OPERATIONS CONSOLE</span></a>
+      <div style="border-top:1px solid #cfc9bd;"></div>
+    </div>
+  </section>
+
+  <!-- 06 · HELIX — contact -->
+  <section id="contact" style="min-height:100vh; display:flex; flex-direction:column; justify-content:center; padding:12vh 40px;">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#ff4d00; margin-bottom:28px;" data-reveal>⑥ THE HELIX — GET IN TOUCH</div>
+    <a class="contact-huge" href="mailto:hwkim@corenineai.com" style="font-weight:800; font-size:clamp(52px,10vw,170px); line-height:0.95; letter-spacing:-0.02em; text-transform:uppercase;" data-reveal>Let's<br>Build<span style="color:#ff4d00;">.</span></a>
+    <div style="display:flex; gap:40px; margin-top:8vh; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; color:#4d463d; flex-wrap:wrap;" data-reveal>
+      <a href="mailto:hwkim@corenineai.com">HWKIM@CORENINEAI.COM</a>
+      <a href="tel:01065714281">010-6571-4281</a>
+      <a href="../contact.html">CONSULTATION ↗</a>
+    </div>
+    <div style="margin-top:10vh; padding-top:24px; border-top:1px solid #cfc9bd; display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7a746a; letter-spacing:0.1em; flex-wrap:wrap; gap:10px;">
+      <span>© 2026 CORENINE AI</span>
+      <span>SEOUL, KOREA</span>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  // ---- scroll reveal ----
+  function checkReveal() {
+    const vh = window.innerHeight;
+    document.querySelectorAll('[data-reveal]').forEach(el => {
+      if (!el.dataset.shown) {
+        el.style.transition = 'opacity .9s ease, transform .9s cubic-bezier(.2,.8,.2,1)';
+        el.style.opacity = '0'; el.style.transform = 'translateY(28px)';
+        el.dataset.shown = 'pending';
+      }
+      if (el.dataset.shown === 'pending' && el.getBoundingClientRect().top < vh * 0.88) {
+        el.style.opacity = '1'; el.style.transform = 'none'; el.dataset.shown = '1';
+      }
+    });
+  }
+  window.addEventListener('scroll', checkReveal, { passive: true });
+  setInterval(checkReveal, 400);
+  setTimeout(checkReveal, 80);
+
+  // ---- particle field: 6 morph targets, scroll-driven ----
+  const SHAPES = ['SPHERE', 'KNOT', 'TORUS', 'WAVE', 'GRID', 'HELIX'];
+  const LAST = SHAPES.length - 1;
+  const mount = document.getElementById('volta-canvas');
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  mount.appendChild(renderer.domElement);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.z = 5.6;
+
+  const N = 30000;
+  const t0 = new Float32Array(N * 3), t1 = new Float32Array(N * 3), t2 = new Float32Array(N * 3),
+        t3 = new Float32Array(N * 3), t4 = new Float32Array(N * 3), t5 = new Float32Array(N * 3),
+        rnd = new Float32Array(N);
+  for (let i = 0; i < N; i++) {
+    const j = i * 3; rnd[i] = Math.random();
+    // 1) sphere shell
+    const u = Math.random() * Math.PI * 2, v = Math.acos(2 * Math.random() - 1), r = 1.7 + (Math.random() - 0.5) * 0.12;
+    t0[j] = r * Math.sin(v) * Math.cos(u); t0[j + 1] = r * Math.cos(v); t0[j + 2] = r * Math.sin(v) * Math.sin(u);
+    // 2) torus knot (p=2,q=3)
+    const tt = Math.random() * Math.PI * 2, tube = 0.28 * Math.sqrt(Math.random()), ang = Math.random() * Math.PI * 2;
+    const kr = 1.15 + 0.45 * Math.cos(3 * tt);
+    t1[j] = kr * Math.cos(2 * tt) + tube * Math.cos(ang);
+    t1[j + 1] = kr * Math.sin(2 * tt) + tube * Math.sin(ang);
+    t1[j + 2] = 0.45 * Math.sin(3 * tt) + tube * Math.cos(ang * 1.7);
+    // 3) torus ring
+    const ta = Math.random() * Math.PI * 2, tb = Math.random() * Math.PI * 2, TR = 1.45, Tr = 0.42 + (Math.random() - 0.5) * 0.1;
+    t2[j] = (TR + Tr * Math.cos(tb)) * Math.cos(ta);
+    t2[j + 1] = (TR + Tr * Math.cos(tb)) * Math.sin(ta) * 0.62;
+    t2[j + 2] = Tr * Math.sin(tb);
+    // 4) wave plane
+    const wx = (Math.random() - 0.5) * 6.4, wz = (Math.random() - 0.5) * 4.2;
+    t3[j] = wx; t3[j + 1] = Math.sin(wx * 1.6) * Math.cos(wz * 1.8) * 0.5 - 0.2; t3[j + 2] = wz;
+    // 5) grid lattice
+    const gs = 7, snap = q => (Math.floor(Math.random() * gs) / (gs - 1) - 0.5) * q + (Math.random() - 0.5) * 0.05;
+    t4[j] = snap(3.4); t4[j + 1] = snap(2.6); t4[j + 2] = snap(2.6);
+    // 6) double helix
+    const h = (Math.random() - 0.5) * 4.4, strand = Math.random() < 0.5 ? 0 : Math.PI, ha = h * 2.4 + strand;
+    const hr = 0.9 + (Math.random() - 0.5) * 0.14;
+    t5[j] = hr * Math.cos(ha); t5[j + 1] = h; t5[j + 2] = hr * Math.sin(ha);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(t0, 3));
+  geo.setAttribute('t1', new THREE.BufferAttribute(t1, 3));
+  geo.setAttribute('t2', new THREE.BufferAttribute(t2, 3));
+  geo.setAttribute('t3', new THREE.BufferAttribute(t3, 3));
+  geo.setAttribute('t4', new THREE.BufferAttribute(t4, 3));
+  geo.setAttribute('t5', new THREE.BufferAttribute(t5, 3));
+  geo.setAttribute('aRnd', new THREE.BufferAttribute(rnd, 1));
+
+  const mat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false,
+    uniforms: {
+      uProg: { value: 0 }, uTime: { value: 0 },
+      uInk: { value: new THREE.Color('#1b1713') },
+      uAccent: { value: new THREE.Color('#ff4d00') },
+    },
+    vertexShader: `
+      attribute vec3 t1; attribute vec3 t2; attribute vec3 t3; attribute vec3 t4; attribute vec3 t5; attribute float aRnd;
+      uniform float uProg; uniform float uTime; varying float vRnd; varying float vDepth;
+      void main(){
+        vRnd = aRnd;
+        vec3 p = position;
+        p = mix(p, t1, smoothstep(0.,1.,clamp(uProg    ,0.,1.)));
+        p = mix(p, t2, smoothstep(0.,1.,clamp(uProg-1.,0.,1.)));
+        p = mix(p, t3, smoothstep(0.,1.,clamp(uProg-2.,0.,1.)));
+        p = mix(p, t4, smoothstep(0.,1.,clamp(uProg-3.,0.,1.)));
+        p = mix(p, t5, smoothstep(0.,1.,clamp(uProg-4.,0.,1.)));
+        float md = abs(uProg - 0.5);
+        md = min(md, abs(uProg - 1.5)); md = min(md, abs(uProg - 2.5));
+        md = min(md, abs(uProg - 3.5)); md = min(md, abs(uProg - 4.5));
+        float mid = sin(md * 3.14159);
+        p += vec3(
+          sin(uTime*0.8 + p.y*3.0 + aRnd*6.28),
+          cos(uTime*1.1 + p.x*2.4 + aRnd*6.28),
+          sin(uTime*0.6 + p.z*3.4)) * (0.05 + mid*0.5*aRnd);
+        vec4 mv = modelViewMatrix * vec4(p, 1.0);
+        vDepth = -mv.z;
+        gl_PointSize = (1.4 + aRnd*2.2) * (300.0 / -mv.z) * 0.014;
+        gl_PointSize = max(gl_PointSize, 1.2);
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: `
+      uniform vec3 uInk; uniform vec3 uAccent; varying float vRnd; varying float vDepth;
+      void main(){
+        if (length(gl_PointCoord - 0.5) > 0.5) discard;
+        vec3 col = mix(uInk, uAccent, step(0.92, vRnd));
+        float a = clamp(1.6 - vDepth*0.14, 0.18, 0.85);
+        gl_FragColor = vec4(col, a);
+      }`,
+  });
+  const points = new THREE.Points(geo, mat);
+  scene.add(points);
+
+  const mouse = { x: 0, y: 0 };
+  window.addEventListener('pointermove', e => {
+    mouse.x = (e.clientX / window.innerWidth - 0.5) * 2;
+    mouse.y = (e.clientY / window.innerHeight - 0.5) * 2;
+  });
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  const shapeEl = document.getElementById('shapeName');
+  const secEl = document.getElementById('sectionLabel');
+  let prog = 0, curSec = -1;
+  const clock = new THREE.Clock();
+  (function animate() {
+    requestAnimationFrame(animate);
+    const doc = document.documentElement;
+    const frac = Math.min(1, window.scrollY / Math.max(1, doc.scrollHeight - window.innerHeight));
+    prog += (frac * LAST - prog) * 0.06;
+    const sec = Math.min(LAST, Math.round(prog));
+    if (sec !== curSec) {
+      curSec = sec;
+      shapeEl.textContent = SHAPES[sec];
+      secEl.textContent = String(sec + 1).padStart(2, '0');
+    }
+    const t = clock.getElapsedTime();
+    mat.uniforms.uProg.value = prog;
+    mat.uniforms.uTime.value = t;
+    points.rotation.y = t * 0.06 + prog * 1.2;
+    camera.position.x += (mouse.x * 0.5 - camera.position.x) * 0.04;
+    camera.position.y += (-mouse.y * 0.35 - camera.position.y) * 0.04;
+    camera.lookAt(0, 0, 0);
+    renderer.render(scene, camera);
+  })();
+})();
 </script>
 </body>
 </html>
