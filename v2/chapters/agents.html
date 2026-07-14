@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>자율 에이전트 — 지능의 시대 · CH.03</title>
+<meta name="description" content="스스로 계획하고 도구를 쓰고 결과를 검증하는 AI. 언어 모델이 손과 발을 얻는 순간, 그리고 다가올 지능의 미래.">
+<meta name="theme-color" content="#060608">
+<link rel="stylesheet" href="../css/app.css">
+<script type="importmap">
+{ "imports": { "three": "../lib/three.module.min.js" } }
+</script>
+</head>
+<body>
+
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+<div class="cursor" aria-hidden="true"></div>
+<div class="cursor-ring" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="brand" href="../index.html"><span class="dot"></span>CoreNine AI <span style="color:var(--mute);font-weight:500">V2</span></a>
+  <nav class="n-links">
+    <a href="./neural.html">01 뉴럴</a>
+    <a href="./llm.html">02 언어</a>
+    <a href="./agents.html">03 에이전트</a>
+    <a href="../index.html" data-cursor="목록">← 아카이브</a>
+  </nav>
+</header>
+
+<main>
+
+<section class="c-hero">
+  <canvas id="gl"></canvas>
+  <div class="wrap">
+    <div class="tag-row reveal">
+      <span>Chapter 03</span><span>Autonomous Agents</span><span>행동하는 지능</span>
+    </div>
+    <h1>
+      <span class="ln"><span>자율</span></span>
+      <span class="ln"><span><em>에이전트</em></span></span>
+    </h1>
+    <p class="lede rmask"><span>질문에 답하던 모델이, 이제 <b>목표를 받으면 스스로 계획을 세운다.</b>
+      도구를 호출하고, 중간 결과를 검증하고, 막히면 경로를 바꾼다.
+      지시받는 도구에서 목표를 이해하는 동료로 — 지능의 마지막 도약.</span></p>
+  </div>
+</section>
+
+<div class="marquee" aria-hidden="true">
+  <div class="track" data-speed="0.45" data-dir="right">
+    <span class="o">PLAN</span><span class="star">✦</span>
+    <span>계획</span><span class="star">✦</span>
+    <span class="o">TOOL USE</span><span class="star">✦</span>
+    <span>도구 사용</span><span class="star">✦</span>
+    <span class="o">REFLECT</span><span class="star">✦</span>
+    <span>자기검증</span><span class="star">✦</span>
+  </div>
+</div>
+
+<section class="block wrap">
+  <div class="prose">
+    <p class="lead reveal">지능의 다음 단계는 <em>행동</em>이다.</p>
+    <p class="reveal">언어 모델은 말을 잘한다. 하지만 말만으로는 항공권을 예약할 수도, 데이터베이스를
+      조회할 수도, 코드를 실행할 수도 없다. <b>에이전트</b>는 여기에 손과 발을 붙인다.
+      모델이 "무엇을 해야 하는가"를 판단하면, 실제로 그 일을 수행할 <b>도구</b>를 호출하고,
+      돌아온 결과를 다시 읽어 다음 행동을 결정한다.</p>
+
+    <h3 class="reveal">계획 · 실행 · 검증의 순환</h3>
+    <p class="reveal">에이전트는 하나의 큰 목표를 작은 단계로 쪼갠다. 각 단계마다 필요한 도구를 고르고,
+      실행하고, 결과가 기대와 맞는지 <b>스스로 점검</b>한다. 틀렸다면 되돌아가 다른 방법을 시도한다.
+      이 <b>계획–실행–검증–수정</b>의 순환이 에이전트를 단순한 챗봇과 구분 짓는 핵심이다.</p>
+    <ul class="reveal">
+      <li>계획(Plan): 목표를 실행 가능한 단계들로 분해한다.</li>
+      <li>도구(Act): 검색·코드 실행·API 호출로 외부 세계와 상호작용한다.</li>
+      <li>관찰(Observe): 결과를 읽어 현재 상태를 갱신한다.</li>
+      <li>성찰(Reflect): 오류를 스스로 발견하고 경로를 다시 짠다.</li>
+    </ul>
+
+    <div class="pull reveal">가장 큰 변화는 속도가 아니라 <em>자율성</em>이다.
+      한 번의 지시로 수십 단계의 과업이 스스로 굴러간다.</div>
+
+    <h3 class="reveal" id="multimodal">멀티모달: 감각의 통합</h3>
+    <p class="reveal">최신 에이전트는 텍스트만 다루지 않는다. <b>이미지·소리·영상·화면</b>을 하나의 표현
+      공간에서 함께 이해한다. 스크린샷을 보고 버튼을 누르고, 도표를 읽고 요약하며, 목소리로 대화한다.
+      인간이 여러 감각을 통합해 세계를 파악하듯, <b>멀티모달 모델</b>은 서로 다른 신호를
+      같은 의미의 언어로 번역한다. 이것이 에이전트가 진짜 세계에서 일하게 만드는 기반이다.</p>
+    <p class="cap">Fig. 03 — 하나의 표현 공간에서 만나는 텍스트·이미지·소리</p>
+
+    <h3 class="reveal">그래서, 지능의 미래는</h3>
+    <p class="reveal">에이전트의 시대는 도구와 동료의 경계를 흐린다. 반복적인 지식 노동은 위임되고,
+      인간의 역할은 <b>목표를 정의하고 판단을 감독하는</b> 쪽으로 옮겨간다. 동시에 신뢰성·안전·
+      책임이라는 오래된 질문이 새로운 무게로 돌아온다. 얼마나 자율적으로 맡길 것인가,
+      어디에 인간의 손을 남길 것인가.</p>
+
+    <div class="pull reveal">지능을 만드는 일은, 결국 우리가 무엇을 인간의 몫으로 남길지를
+      결정하는 일이다.</div>
+
+    <p class="reveal">1950년 튜링의 물음에서 시작된 여정은 여기, 스스로 목표를 향해 움직이는
+      기계 앞에 도착했다. 다음 페이지는 아직 쓰이지 않았다 — 그것을 쓰는 것은 우리다.</p>
+  </div>
+
+  <nav class="pager">
+    <a href="./llm.html" data-cursor="이전"><span class="dir">← 이전 챕터</span><span class="ttl">거대 언어 모델</span></a>
+    <a class="next" href="../index.html" data-cursor="처음"><span class="dir">아카이브 →</span><span class="ttl">처음으로 돌아가기</span></a>
+  </nav>
+</section>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="base">
+      <a class="back-main" href="../index.html">← 지능의 시대 아카이브</a>
+      <span>Chapter 03 · Autonomous Agents</span>
+    </div>
+  </div>
+</footer>
+
+</main>
+
+<script src="../lib/lenis.min.js"></script>
+<script src="../lib/gsap.min.js"></script>
+<script src="../lib/ScrollTrigger.min.js"></script>
+<script type="module">
+  import { boot } from '../js/app.js';
+  import { initHero } from '../js/hero.js';
+  const canvas = document.getElementById('gl');
+  if (canvas) { try { initHero(canvas, { count: window.matchMedia('(max-width:720px)').matches ? 3200 : 9000 }); } catch (e) { console.warn(e); } }
+  boot();
+</script>
+</body>
+</html>

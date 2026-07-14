@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>거대 언어 모델 — 지능의 시대 · CH.02</title>
+<meta name="description" content="트랜스포머와 어텐션. 다음 단어를 예측하는 단순한 목표에서 어떻게 추론과 대화가 창발했는가.">
+<meta name="theme-color" content="#060608">
+<link rel="stylesheet" href="../css/app.css">
+<script type="importmap">
+{ "imports": { "three": "../lib/three.module.min.js" } }
+</script>
+</head>
+<body>
+
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+<div class="cursor" aria-hidden="true"></div>
+<div class="cursor-ring" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="brand" href="../index.html"><span class="dot"></span>CoreNine AI <span style="color:var(--mute);font-weight:500">V2</span></a>
+  <nav class="n-links">
+    <a href="./neural.html">01 뉴럴</a>
+    <a href="./llm.html">02 언어</a>
+    <a href="./agents.html">03 에이전트</a>
+    <a href="../index.html" data-cursor="목록">← 아카이브</a>
+  </nav>
+</header>
+
+<main>
+
+<section class="c-hero">
+  <canvas id="gl"></canvas>
+  <div class="wrap">
+    <div class="tag-row reveal">
+      <span>Chapter 02</span><span>Large Language Models</span><span>언어의 지능</span>
+    </div>
+    <h1>
+      <span class="ln"><span>거대 언어</span></span>
+      <span class="ln"><span><em>모델</em></span></span>
+    </h1>
+    <p class="lede rmask"><span>인터넷의 거의 모든 글을 읽고, 오직 <b>다음 단어를 맞히는</b> 연습만 반복한다.
+      그 단순한 목표 하나에서 번역·요약·추론·코딩·대화가 뜻밖에 피어났다.
+      규모가 만든 창발의 이야기.</span></p>
+  </div>
+</section>
+
+<div class="marquee" aria-hidden="true">
+  <div class="track" data-speed="0.5">
+    <span class="o">TRANSFORMER</span><span class="star">✦</span>
+    <span>어텐션</span><span class="star">✦</span>
+    <span class="o">TOKENS</span><span class="star">✦</span>
+    <span>토큰</span><span class="star">✦</span>
+    <span class="o">EMERGENCE</span><span class="star">✦</span>
+    <span>창발</span><span class="star">✦</span>
+  </div>
+</div>
+
+<section class="block wrap">
+  <div class="prose">
+    <p class="lead reveal">모든 것은 <em>다음 단어</em>를 맞히는 놀이에서 시작됐다.</p>
+    <p class="reveal">"오늘 날씨가 참 ___". 빈칸에 '좋다'가 올 확률을 계산하는 것.
+      거대 언어 모델(LLM)이 학습 내내 하는 일은 이것뿐이다. 하지만 인터넷 규모의 텍스트로
+      이 연습을 수천억 번 반복하면, 단어를 맞히기 위해 <b>문법·상식·논리·세계 지식</b>을
+      모두 내부에 담아야만 한다. 목표는 단순했지만, 그 부산물이 지능을 닮았다.</p>
+
+    <h3 class="reveal">토큰: 언어를 숫자로</h3>
+    <p class="reveal">모델은 글자를 그대로 읽지 않는다. 문장을 <b>토큰</b>이라는 조각으로 나누고,
+      각 토큰을 수백 차원의 벡터로 바꾼다. 이 벡터 공간에서 '왕'과 '여왕', '서울'과 '도쿄'는
+      의미의 방향으로 배치된다. 언어가 기하학이 되는 순간이다.</p>
+    <ul class="reveal">
+      <li>토큰화: 문장을 의미 단위 조각으로 분해한다.</li>
+      <li>임베딩: 각 토큰을 좌표(벡터)로 변환한다.</li>
+      <li>예측: 지금까지의 맥락으로 다음 토큰의 확률을 계산한다.</li>
+    </ul>
+
+    <div class="pull reveal">2017년, 단 한 편의 논문이 판을 바꿨다. "Attention Is All You Need" —
+      필요한 것은 어텐션뿐이었다.</div>
+
+    <h3 class="reveal">어텐션: 맥락을 읽는 눈</h3>
+    <p class="reveal"><b>트랜스포머</b>의 심장은 <b>셀프 어텐션</b>이다. 문장의 각 단어가 나머지 모든
+      단어를 동시에 바라보며 "지금 나에게 가장 중요한 단어는 무엇인가"를 저울질한다.
+      "그 은행에 갔다"에서 '은행'이 강가인지 금융기관인지를, 주변 단어와의 관계로 판단한다.
+      순서대로 읽던 과거 모델과 달리, 트랜스포머는 문장 전체를 <b>한눈에 병렬로</b> 처리한다.</p>
+    <p class="cap">Fig. 02 — 모든 단어가 모든 단어를 바라본다</p>
+
+    <h3 class="reveal">스케일이 만든 창발</h3>
+    <p class="reveal">모델과 데이터를 키우자, 예상치 못한 일이 벌어졌다. 작은 모델에는 없던 능력이
+      특정 규모를 넘어서면 <b>갑자기</b> 나타났다. 여러 단계 추론, 낯선 과제를 예시 몇 개로 배우기,
+      코드 작성. 아무도 명시적으로 가르치지 않은 능력들이 창발했다. 스케일은 양이 아니라
+      <b>질적 전환</b>의 조건이었다.</p>
+
+    <div class="pull reveal">언어 모델은 진실을 알지 못한다. 그저 가장 그럴듯한 다음 단어를 고를 뿐이다.
+      이 아름다움과 위험이 같은 뿌리에서 나온다.</div>
+
+    <p class="reveal">이제 이 언어의 지능에 <b>도구</b>와 <b>목표</b>를 쥐여주면 어떻게 될까.
+      말하는 모델이 행동하는 존재로 바뀌는 곳 — 다음 챕터, 자율 에이전트로 이어진다.</p>
+  </div>
+
+  <nav class="pager">
+    <a href="./neural.html" data-cursor="이전"><span class="dir">← 이전 챕터</span><span class="ttl">뉴럴 네트워크</span></a>
+    <a class="next" href="./agents.html" data-cursor="다음"><span class="dir">다음 챕터 →</span><span class="ttl">자율 에이전트</span></a>
+  </nav>
+</section>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="base">
+      <a class="back-main" href="../index.html">← 지능의 시대 아카이브</a>
+      <span>Chapter 02 · Large Language Models</span>
+    </div>
+  </div>
+</footer>
+
+</main>
+
+<script src="../lib/lenis.min.js"></script>
+<script src="../lib/gsap.min.js"></script>
+<script src="../lib/ScrollTrigger.min.js"></script>
+<script type="module">
+  import { boot } from '../js/app.js';
+  import { initHero } from '../js/hero.js';
+  const canvas = document.getElementById('gl');
+  if (canvas) { try { initHero(canvas, { count: window.matchMedia('(max-width:720px)').matches ? 3200 : 9000 }); } catch (e) { console.warn(e); } }
+  boot();
+</script>
+</body>
+</html>

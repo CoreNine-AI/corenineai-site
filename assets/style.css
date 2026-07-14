@@ -80,7 +80,27 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.88);
 }
 .nav-links a.cta:hover{color:#fff;transform:translateY(-1.5px);box-shadow:0 10px 24px rgba(4,120,87,.32)}
 .nav-burger{display:none;background:none;border:none;cursor:pointer;padding:8px}
-.nav-burger span{display:block;width:22px;height:2.5px;background:var(--ink);border-radius:2px;margin:4.5px 0;transition:.2s}
+.nav-burger span{display:block;width:22px;height:2.5px;background:var(--ink);border-radius:2px;margin:4.5px 0;transition:.25s}
+.nav-burger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav-burger.open span:nth-child(2){opacity:0}
+.nav-burger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* ---- nav dropdown (자동화 구축 > 철강 유통) ---- */
+.nav-item{position:relative;display:flex;align-items:center}
+.nav-item > a{display:inline-flex;align-items:center;gap:6px}
+.nav-item .caret{width:9px;height:6px;opacity:.55;transition:transform .2s}
+.nav-item:hover .caret{transform:rotate(180deg)}
+.nav-sub{position:absolute;top:100%;left:50%;transform:translate(-50%,10px);min-width:250px;
+  background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-md);
+  padding:8px;opacity:0;visibility:hidden;transition:opacity .18s ease,transform .18s ease,visibility .18s}
+.nav-sub::before{content:"";position:absolute;left:0;right:0;top:-14px;height:14px}
+.nav-item:hover .nav-sub,.nav-item:focus-within .nav-sub{opacity:1;visibility:visible;transform:translate(-50%,6px)}
+.nav-sub a{display:block;padding:11px 14px;border-radius:10px}
+.nav-sub a:hover{background:var(--brand-softer)}
+.nav-sub a::after{display:none}
+.nav-sub .ns-l{display:block;font-size:14px;font-weight:700;color:var(--ink)}
+.nav-sub a.active .ns-l{color:var(--brand-strong)}
+.nav-sub .ns-d{display:block;margin-top:2px;font-size:12px;font-weight:500;color:var(--mute)}
 
 /* ---------------- buttons ---------------- */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
@@ -191,8 +211,27 @@ footer a:hover{color:#fff}
 .foot-grid .brand .name{color:#fff}
 .foot-grid .brand .name em{color:var(--lime)}
 .foot-head{color:#fff;font-weight:800;margin-bottom:12px}
-.foot-note{margin-top:48px;padding-top:24px;border-top:1px solid var(--forest-line);
-  font-size:12.5px;color:#6E8A7D;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;position:relative}
+.foot-contact{margin-top:22px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.foot-contact a{display:inline-flex;align-items:center;gap:10px;font-weight:700;color:#CFE3D9;width:max-content}
+.foot-contact a:hover{color:var(--lime)}
+.foot-contact .fc-k{font-size:10px;font-weight:800;letter-spacing:.14em;color:var(--lime);
+  background:rgba(201,242,78,.1);border:1px solid rgba(201,242,78,.25);border-radius:6px;padding:2.5px 8px}
+.foot-note{margin-top:56px;padding-top:26px;position:relative;
+  font-size:12.5px;color:#6E8A7D;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px}
+.foot-note::before{content:"";position:absolute;top:0;left:24px;right:24px;height:1px;
+  background:linear-gradient(90deg,rgba(11,185,133,.45),var(--forest-line) 40%,var(--forest-line) 75%,rgba(201,242,78,.3))}
+.fn-left,.fn-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.fn-mark{font-size:13.5px;font-weight:500;letter-spacing:-.03em;color:#B9CFC5}
+.fn-mark b{font-weight:800;color:#fff}
+.fn-mark em{font-style:normal;font-weight:800;color:var(--lime)}
+.fn-sep{width:1px;height:12px;background:var(--forest-line)}
+.fn-ceo{font-weight:700;color:#93AFA2}
+.fn-right a{font-weight:700;color:#93AFA2}
+.fn-right a:hover{color:var(--lime)}
+.fn-top{margin-left:6px;background:rgba(255,255,255,.05);border:1px solid var(--forest-line);color:#B9CFC5;
+  font-size:11px;font-weight:800;letter-spacing:.08em;padding:8px 14px;border-radius:999px;cursor:pointer;
+  transition:all .18s}
+.fn-top:hover{background:var(--lime);border-color:var(--lime);color:var(--forest);transform:translateY(-2px)}
 
 /* ---------------- reveal animations ---------------- */
 .reveal,.reveal-l,.reveal-r{opacity:0;transform:translateY(28px);transition:opacity .75s ease,transform .75s ease}
@@ -261,15 +300,51 @@ footer a:hover{color:#fff}
   .nav-links{
     display:none;position:absolute;top:70px;left:0;right:0;background:#fff;
     flex-direction:column;align-items:stretch;gap:0;border-bottom:1px solid var(--line);
-    padding:8px 0 16px;box-shadow:var(--shadow-md);
+    padding:8px 0 16px;box-shadow:var(--shadow-md);max-height:calc(100vh - 70px);overflow-y:auto;
   }
   .nav-links.open{display:flex}
   .nav-links a{padding:13px 24px;font-size:15.5px}
   .nav-links a:not(.cta)::after{display:none}
   .nav-links a.cta{margin:10px 24px 0;text-align:center;justify-content:center;display:flex}
   .nav-burger{display:block}
+  /* 모바일: 드롭다운을 펼친 목록으로 */
+  .nav-item{flex-direction:column;align-items:stretch}
+  .nav-item .caret{display:none}
+  .nav-sub{position:static;transform:none;opacity:1;visibility:visible;min-width:0;
+    border:none;box-shadow:none;border-radius:0;padding:0 0 4px;background:var(--bg-soft)}
+  .nav-sub::before{display:none}
+  .nav-sub a{padding:11px 24px 11px 38px;border-radius:0}
+  .nav-sub .ns-l{font-size:14.5px}
 }
 @media (max-width:560px){
-  .stats{grid-template-columns:1fr}
-  .foot-grid{grid-template-columns:1fr}
+  body{font-size:15px}
+  .wrap{padding:0 20px}
+  section{padding:60px 0}
+  section.tight{padding:52px 0}
+  .nav-in{height:62px}
+  .nav-links{top:62px;max-height:calc(100vh - 62px)}
+  .brand .name{font-size:18px}
+  .logo-mark{width:29px;height:29px}
+  .page-hero{padding:56px 0 52px}
+  .page-hero .lede{font-size:15.5px}
+  .page-hero h1{font-size:clamp(27px,7.6vw,34px)}
+  h2.title{font-size:clamp(24px,6.6vw,30px)}
+  .title-desc{font-size:15px;margin-top:16px}
+  .eyebrow{font-size:11.5px;padding:7px 14px;margin-bottom:18px}
+  .btn{padding:14px 24px;font-size:14.5px;width:100%;max-width:420px}
+  .btn.sm{width:auto}
+  .stats{grid-template-columns:1fr;gap:14px}
+  .stat{padding:24px 22px}
+  .stat .n{font-size:34px}
+  .cta-band{padding:80px 0}
+  .faq-item summary{padding:18px 20px;font-size:15px}
+  .faq-item .ans{padding:0 20px 20px}
+  table.doc{font-size:13.5px}
+  table.doc th{padding:11px 14px}
+  table.doc td{padding:13px 14px}
+  .marquee .chip{font-size:12.5px;padding:8px 16px}
+  .foot-grid{grid-template-columns:1fr;gap:28px}
+  footer{padding:56px 0 36px}
+  .foot-note{flex-direction:column;align-items:flex-start;gap:12px}
+  .foot-note::before{left:20px;right:20px}
 }

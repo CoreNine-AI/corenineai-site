@@ -99,6 +99,11 @@
           <textarea id="fMsg" placeholder="예) 사무직 30명 대상 교육을 검토 중입니다. 3월 중 진행 가능할까요?"></textarea>
           <button class="btn primary" type="submit" id="submitBtn">상담 신청하기 <span class="arr">→</span></button>
           <p class="hint">버튼을 누르면 바로 접수됩니다. 영업일 기준 24시간 안에 회신드립니다.</p>
+          <p class="hint" id="failMsg" style="display:none;color:#C0392B;font-size:13px;line-height:1.8">
+            접수 중 오류가 발생했습니다. 아래로 직접 연락 주시면 빠르게 회신드리겠습니다.<br>
+            <a href="tel:01065714281" style="color:var(--brand-strong);font-weight:800">010-6571-4281</a> ·
+            <a href="mailto:hwkim@corenineai.com" style="color:var(--brand-strong);font-weight:800">hwkim@corenineai.com</a>
+          </p>
         </form>
         <div class="fallback" id="doneMsg" style="display:none;text-align:center;padding-bottom:40px">
           <div style="width:60px;height:60px;border-radius:50%;background:var(--brand-soft);color:var(--brand-strong);font-size:28px;display:flex;align-items:center;justify-content:center;margin:26px auto 18px">✓</div>
@@ -124,8 +129,8 @@
         <div class="side-block">
           <h4>바로 연락하시려면</h4>
           <div class="direct">
-            <b>EMAIL</b> <a href="mailto:hwkim@corenineai.com">hwkim@corenineai.com</a><br>
-            <b>대표</b> 김효원 — 진단·설계·강의를 직접 진행합니다
+            <b>TEL</b> <a href="tel:01065714281">010-6571-4281</a><br>
+            <b>EMAIL</b> <a href="mailto:hwkim@corenineai.com">hwkim@corenineai.com</a>
           </div>
         </div>
         <div class="side-block" style="background:var(--brand-softer);border-color:var(--brand-line)">
@@ -169,13 +174,16 @@
           '문의 내용': v('fMsg') || '-',
         }),
       });
-      if (!res.ok) throw new Error('submit failed');
+      if (!res.ok) throw new Error('submit failed: HTTP ' + res.status);
+      // FormSubmit은 실패도 200으로 주므로 본문의 success 값까지 확인한다.
+      const data = await res.json();
+      if (String(data.success) !== 'true') throw new Error('submit failed: ' + (data.message || 'unknown'));
       document.getElementById('contactForm').style.display = 'none';
       document.getElementById('doneMsg').style.display = 'block';
     } catch (err) {
       btn.disabled = false;
       btn.innerHTML = '상담 신청하기 <span class="arr">→</span>';
-      alert('접수 중 오류가 발생했습니다. hwkim@corenineai.com 로 직접 메일 주시면 빠르게 회신드리겠습니다.');
+      document.getElementById('failMsg').style.display = 'block';
     }
   });
 </script>

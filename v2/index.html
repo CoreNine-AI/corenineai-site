@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>지능의 시대 — CoreNine AI V2</title>
+<meta name="description" content="지능의 시대. 뉴럴 네트워크에서 자율 에이전트까지, 인공지능이 세계를 다시 쓰는 방식을 시각적으로 풀어낸 인터랙티브 에디토리얼.">
+<meta name="theme-color" content="#060608">
+<meta property="og:title" content="지능의 시대 — CoreNine AI V2">
+<meta property="og:description" content="뉴럴 네트워크에서 자율 에이전트까지, 인공지능이 세계를 다시 쓰는 방식.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="./css/app.css">
+<script type="importmap">
+{ "imports": { "three": "./lib/three.module.min.js" } }
+</script>
+</head>
+<body>
+
+<!-- overlays -->
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+<div class="cursor" aria-hidden="true"></div>
+<div class="cursor-ring" aria-hidden="true"></div>
+
+<!-- preloader -->
+<div class="preloader" aria-hidden="true">
+  <div class="pl-word"><span>INTELLIGENCE</span></div>
+  <div class="pl-count">00</div>
+  <div class="pl-bar"></div>
+</div>
+
+<!-- nav -->
+<header class="nav">
+  <a class="brand" href="./index.html"><span class="dot"></span>CoreNine AI <span style="color:var(--mute);font-weight:500">V2</span></a>
+  <nav class="n-links">
+    <a href="#concept">개념</a>
+    <a href="#chapters">챕터</a>
+    <a href="#timeline">연대기</a>
+    <a href="../index.html" data-cursor="EXIT">← 메인</a>
+  </nav>
+</header>
+
+<main>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <canvas id="gl"></canvas>
+  <div class="wrap">
+    <div class="kicker">
+      <div class="eyebrow">CoreNine AI · 인터랙티브 에디토리얼</div>
+      <div class="r rmask"><span>2026 · 인공지능 아카이브<br>No. 09 / 지능의 형상</span></div>
+    </div>
+    <h1>
+      <span class="ln"><span>지능의</span></span>
+      <span class="ln"><span><em>시대</em></span></span>
+    </h1>
+    <div class="sub">
+      <p class="rmask"><span>기계가 인간의 언어를 이해하고, 스스로 판단하고, 행동하기 시작했다.
+        <b>뉴럴 네트워크에서 자율 에이전트까지</b> — 인공지능이 세계를 다시 쓰는 방식을 여섯 개의 챕터로 풀어낸다.</span></p>
+      <div class="idx rmask"><span>SCROLL — 001 / 006</span></div>
+    </div>
+  </div>
+  <div class="scroll-cue"><span>스크롤</span><span class="rail"></span></div>
+</section>
+
+<!-- marquee -->
+<div class="marquee" aria-hidden="true">
+  <div class="track" data-speed="0.5">
+    <span>뉴럴 네트워크</span><span class="star">✦</span>
+    <span class="o">LARGE LANGUAGE MODELS</span><span class="star">✦</span>
+    <span>멀티모달</span><span class="star">✦</span>
+    <span class="o">AUTONOMOUS AGENTS</span><span class="star">✦</span>
+    <span>생성형 지능</span><span class="star">✦</span>
+    <span class="o">THE AGE OF INTELLIGENCE</span><span class="star">✦</span>
+  </div>
+</div>
+
+<!-- ============ CONCEPT / STATEMENT ============ -->
+<section id="concept" class="statement wrap">
+  <p class="rmask"><span>인공지능은 더 이상</span></p>
+  <p><span class="dim rmask"><span>도구가 아니다.</span></span></p>
+  <p class="rmask"><span>그것은 <em>새로운 사고의 매질</em>이며,</span></p>
+  <p class="rmask"><span>인간이 세계를 이해하는 방식 자체를 바꾼다.</span></p>
+  <div class="foot reveal">
+    <span class="no">[ 서문 ]</span>
+    <span>2012년 이미지넷의 한 실험이 불붙인 딥러닝의 물결은,
+      10여 년 만에 언어·이미지·코드·판단을 아우르는 범용 지능의 문턱에 도달했다.
+      이 아카이브는 그 여정을 여섯 개의 렌즈로 관찰한다.</span>
+  </div>
+</section>
+
+<!-- ============ STATS ============ -->
+<section class="block wrap">
+  <div class="block-head">
+    <h2 class="rmask"><span>숫자로 읽는<br>지능의 규모</span></h2>
+    <p class="meta reveal">모델은 매년 더 크고, 더 빠르고, 더 저렴해진다.
+      스케일은 단순한 크기가 아니라 새로운 능력이 창발하는 조건이 되었다.</p>
+  </div>
+  <div class="stats">
+    <div class="cell reveal">
+      <div class="num"><span data-count="1760">0</span><span class="u">B</span></div>
+      <div class="lbl">최전선 모델의 추정 파라미터 수 — 인간 대뇌 시냅스의 약 0.1% 규모.</div>
+      <div class="tag">Parameters</div>
+    </div>
+    <div class="cell reveal d1">
+      <div class="num"><span data-count="99.4" data-dec="1">0</span><span class="u">%</span></div>
+      <div class="lbl">2012년 대비 이미지 인식 오류율 감소폭. 기계의 눈이 인간을 넘어선 지점.</div>
+      <div class="tag">Vision</div>
+    </div>
+    <div class="cell reveal d2">
+      <div class="num"><span data-count="1000000">0</span><span class="u">×</span></div>
+      <div class="lbl">2018년 이후 학습 연산량의 증가 배수. 무어의 법칙을 아득히 앞선 곡선.</div>
+      <div class="tag">Compute</div>
+    </div>
+    <div class="cell reveal d3">
+      <div class="num"><span data-count="1.8" data-dec="1">0</span><span class="u">초</span></div>
+      <div class="lbl">에이전트가 하나의 도구 호출을 계획·실행·검증하는 데 걸리는 평균 시간.</div>
+      <div class="tag">Agents</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CHAPTERS ============ -->
+<section id="chapters" class="block wrap">
+  <div class="block-head">
+    <h2 class="rmask"><span>여섯 개의<br>챕터</span></h2>
+    <p class="meta reveal">각 챕터는 하나의 개념을 깊이 있게 해부한다.
+      카드를 눌러 상세 페이지로 들어가면, 원리와 역사, 그리고 다가올 미래를 만날 수 있다.</p>
+  </div>
+  <div class="chapters">
+    <a class="chap reveal" href="./chapters/neural.html" data-cursor="열기">
+      <span class="glyph">01</span>
+      <div class="c-top"><span class="c-no">CHAPTER 01</span></div>
+      <div class="c-body">
+        <h3>뉴럴 네트워크의<br>원리</h3>
+        <p class="c-desc">수백만 개의 가중치가 데이터로부터 스스로 패턴을 학습한다. 지능의 가장 작은 벽돌.</p>
+        <span class="c-go">자세히 보기 <span class="arw">→</span></span>
+      </div>
+    </a>
+    <a class="chap reveal d1" href="./chapters/llm.html" data-cursor="열기">
+      <span class="glyph">02</span>
+      <div class="c-top"><span class="c-no">CHAPTER 02</span></div>
+      <div class="c-body">
+        <h3>거대 언어<br>모델</h3>
+        <p class="c-desc">트랜스포머와 어텐션. 다음 단어를 예측하는 단순한 목표에서 창발한 추론과 대화.</p>
+        <span class="c-go">자세히 보기 <span class="arw">→</span></span>
+      </div>
+    </a>
+    <a class="chap reveal" href="./chapters/agents.html" data-cursor="열기">
+      <span class="glyph">03</span>
+      <div class="c-top"><span class="c-no">CHAPTER 03</span></div>
+      <div class="c-body">
+        <h3>자율<br>에이전트</h3>
+        <p class="c-desc">스스로 계획하고 도구를 쓰고 결과를 검증하는 AI. 언어 모델이 손과 발을 얻는 순간.</p>
+        <span class="c-go">자세히 보기 <span class="arw">→</span></span>
+      </div>
+    </a>
+    <a class="chap reveal d1" href="./chapters/agents.html#multimodal" data-cursor="열기">
+      <span class="glyph">04</span>
+      <div class="c-top"><span class="c-no">CHAPTER 04</span></div>
+      <div class="c-body">
+        <h3>멀티모달<br>지능</h3>
+        <p class="c-desc">텍스트·이미지·소리·영상을 하나의 표현 공간에서 이해하는, 감각의 통합.</p>
+        <span class="c-go">자세히 보기 <span class="arw">→</span></span>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- ============ TIMELINE ============ -->
+<section id="timeline" class="block wrap">
+  <div class="block-head">
+    <h2 class="rmask"><span>지능의<br>연대기</span></h2>
+    <p class="meta reveal">하나의 질문에서 시작된 여정. 1950년 튜링의 물음에서
+      2025년 에이전트의 시대까지, 결정적 순간들을 잇는다.</p>
+  </div>
+  <div class="timeline">
+    <div class="tl-row reveal">
+      <div class="yr">1950</div>
+      <div class="tl-b"><h4>튜링의 질문</h4>
+        <p>앨런 튜링이 "기계는 생각할 수 있는가"를 물으며 모방 게임(튜링 테스트)을 제안했다. 인공지능이라는 꿈의 출발점.</p>
+        <div class="era">The Question</div></div>
+    </div>
+    <div class="tl-row reveal">
+      <div class="yr">1958</div>
+      <div class="tl-b"><h4>퍼셉트론</h4>
+        <p>프랭크 로젠블랫이 생물학적 뉴런을 본뜬 최초의 학습 알고리즘을 만들었다. 오늘날 딥러닝의 씨앗.</p>
+        <div class="era">First Neuron</div></div>
+    </div>
+    <div class="tl-row reveal">
+      <div class="yr">2012</div>
+      <div class="tl-b"><h4>딥러닝의 폭발</h4>
+        <p>AlexNet이 이미지넷 대회에서 압도적 성능으로 우승하며, GPU와 심층 신경망의 시대를 열었다. 겨울은 끝났다.</p>
+        <div class="era">The Thaw</div></div>
+    </div>
+    <div class="tl-row reveal">
+      <div class="yr">2017</div>
+      <div class="tl-b"><h4>어텐션의 등장</h4>
+        <p>"Attention Is All You Need" 논문이 트랜스포머 구조를 발표했다. 오늘날 모든 거대 언어 모델의 골격.</p>
+        <div class="era">The Architecture</div></div>
+    </div>
+    <div class="tl-row reveal">
+      <div class="yr">2022</div>
+      <div class="tl-b"><h4>대화의 대중화</h4>
+        <p>생성형 AI가 일상으로 들어왔다. 누구나 자연어로 기계와 협업하고, 코드와 이미지를 함께 만드는 시대.</p>
+        <div class="era">Generative</div></div>
+    </div>
+    <div class="tl-row reveal">
+      <div class="yr">2025</div>
+      <div class="tl-b"><h4>에이전트의 시대</h4>
+        <p>AI가 스스로 계획하고 도구를 사용해 여러 단계의 과업을 완수한다. 지시받는 도구에서, 목표를 이해하는 동료로.</p>
+        <div class="era">Autonomy</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ QUOTE ============ -->
+<section class="quote wrap">
+  <blockquote class="rmask"><span>우리는 도구를 만들고, <em>그 도구가 다시 우리를 만든다.</em></span></blockquote>
+  <cite>— 마셜 매클루언의 문장을, 지능의 시대에 다시 읽으며</cite>
+</section>
+
+<!-- ============ CTA ============ -->
+<section class="cta-band wrap">
+  <div class="eyebrow reveal" style="justify-content:center;margin-bottom:26px">더 알아보기</div>
+  <h2 class="rmask"><span>지능을 <em>설계</em>하다</span></h2>
+  <a class="mag" href="./chapters/neural.html" data-cursor="시작"><span class="mag-in"><span class="d"></span>첫 번째 챕터로 들어가기</span></a>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="foot">
+  <div class="wrap">
+    <div class="top">
+      <div class="big rmask"><span>CoreNine<br>AI</span></div>
+      <div class="cols">
+        <div>
+          <h5>아카이브</h5>
+          <a href="#concept">개념</a>
+          <a href="#chapters">여섯 챕터</a>
+          <a href="#timeline">연대기</a>
+        </div>
+        <div>
+          <h5>챕터</h5>
+          <a href="./chapters/neural.html">뉴럴 네트워크</a>
+          <a href="./chapters/llm.html">거대 언어 모델</a>
+          <a href="./chapters/agents.html">자율 에이전트</a>
+        </div>
+        <div>
+          <h5>돌아가기</h5>
+          <a class="back-main" href="../index.html">← CoreNine AI 메인</a>
+          <p style="color:var(--mute)">기업용 AI 교육·구축</p>
+        </div>
+      </div>
+    </div>
+    <div class="base">
+      <span>© 2026 CoreNine AI — 지능의 시대 아카이브</span>
+      <span>Interactive Editorial · WebGL / No.09</span>
+    </div>
+  </div>
+</footer>
+
+</main>
+
+<script src="./lib/lenis.min.js"></script>
+<script src="./lib/gsap.min.js"></script>
+<script src="./lib/ScrollTrigger.min.js"></script>
+<script type="module">
+  import { boot } from './js/app.js';
+  import { initHero } from './js/hero.js';
+  const canvas = document.getElementById('gl');
+  if (canvas) { try { initHero(canvas); } catch (e) { console.warn('hero disabled', e); } }
+  boot();
+</script>
+</body>
+</html>
