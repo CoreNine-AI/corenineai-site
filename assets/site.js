@@ -28,7 +28,10 @@
       ['steel.html', 'steel', '철강 · 금속 유통 <span class="nav-new">전문</span>', '밀시트 검수 · 견적 자동화'],
     ]],
     ['cases.html',    'cases',    '고객 사례'],
-    ['insights.html', 'insights', '인사이트'],
+    ['insights.html', 'insights', '인사이트', [
+      ['insights.html', 'insights', '인사이트 · 자료실', '체크리스트 · 실무 자료'],
+      ['v2/index.html', 'v2', 'AI의 발달 <span class="nav-new">V2</span>', '인터랙티브 3D 에디토리얼'],
+    ]],
   ];
 
   function renderNav() {
