@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>처리량 리포트 · 운영 콘솔 — CoreNine AI 구축 구현물</title>
+<link rel="stylesheet" href="assets/ops.css">
+<style>
+  .grid2{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-top:14px;align-items:start}
+  .save-card{padding:20px 22px;font-size:13.5px;color:var(--sub);line-height:1.9}
+  .save-card .big{font-size:34px;font-weight:800;letter-spacing:-.03em;color:var(--ink);
+    font-variant-numeric:tabular-nums}
+  .save-card .big small{font-size:14px;color:var(--mute);font-weight:700}
+  .save-math{margin-top:12px;background:var(--bg);border-radius:10px;padding:12px 15px;font-size:12.5px}
+  .save-math .r{display:flex;justify-content:space-between;padding:3px 0}
+  .save-math em{font-style:normal;font-weight:800;font-variant-numeric:tabular-nums}
+  @media (max-width:1050px){.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-ops="volume">
+
+<div class="layout">
+  <main>
+    <div class="head">
+      <div>
+        <h1>처리량 리포트</h1>
+        <p>파이프라인이 처리한 문서량과 절감 효과 — 주간 리포트는 매주 월요일 아침 담당자 메일로도 발송됩니다</p>
+      </div>
+      <span class="live"><i></i>집계 기준 오늘 11:02</span>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="k">최근 14일 처리</div><div class="v">1,847<small> 건</small></div><div class="d">▲ 직전 2주 대비 +9%</div></div>
+      <div class="kpi"><div class="k">자동 처리율</div><div class="v">94.3<small> %</small></div><div class="d">1,742건이 사람 손 없이 완료</div></div>
+      <div class="kpi"><div class="k">건당 평균 처리</div><div class="v">8.2<small> 초</small></div><div class="d">수기 평균 3.5분 대비 −96%</div></div>
+      <div class="kpi"><div class="k">절감 시간 (14일)</div><div class="v">103<small> 시간</small></div><div class="d">= 담당자 1.6명분 업무 시간</div></div>
+    </div>
+
+    <div class="panel" style="margin-top:14px">
+      <div class="panel-h"><b>일별 처리량 — 최근 14일</b><span>막대에 마우스를 올리면 상세가 보입니다</span></div>
+      <div class="chart-legend" style="padding-top:14px">
+        <span class="li"><i class="sw" style="background:#047857"></i>자동 처리</span>
+        <span class="li"><i class="sw" style="background:#1D6FD6"></i>검수 경유</span>
+      </div>
+      <div class="chart-wrap"><svg id="volChart" width="100%" height="280" viewBox="0 0 860 280"></svg></div>
+    </div>
+
+    <div class="grid2">
+      <div class="panel">
+        <div class="panel-h"><b>발신처별 처리량 TOP 8</b><span>최근 14일 · 자동 처리율 함께 표기</span></div>
+        <table>
+          <thead><tr><th>발신처</th><th>건수</th><th>자동 처리율</th><th>비고</th></tr></thead>
+          <tbody id="senderTable"></tbody>
+        </table>
+      </div>
+
+      <div class="panel">
+        <div class="panel-h"><b>절감 효과 환산</b><span>합의된 기준 수치로 계산</span></div>
+        <div class="save-card">
+          <div>최근 14일 동안 파이프라인이 돌려드린 시간</div>
+          <div class="big">103.4<small> 시간</small></div>
+          <div class="save-math">
+            <div class="r"><span>자동 처리 건수</span><em>1,742건</em></div>
+            <div class="r"><span>건당 수기 처리(도입 전 측정)</span><em>3.5분</em></div>
+            <div class="r"><span>건당 자동 처리</span><em>8.2초</em></div>
+            <div class="r" style="border-top:1px dashed var(--line);margin-top:6px;padding-top:8px"><span>절감</span><em style="color:var(--brand-strong)">1,742 × (3.5분 − 8.2초) ≈ 103시간</em></div>
+          </div>
+          <p style="margin-top:12px;font-size:12px;color:var(--mute)">※ 도입 전 현장 진단에서 함께 측정한 건당 소요 시간을 기준으로 계산합니다 — 부풀린 가정치를 쓰지 않습니다.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="assets/ops.js"></script>
+<script>
+  // ---------- 일별 처리량 (고정 시뮬레이션 데이터: 평일 높고 주말 낮음) ----------
+  const DAYS = ['6/30 월','7/1 화','7/2 수','7/3 목','7/4 금','7/5 토','7/6 일',
+                '7/7 월','7/8 화','7/9 수','7/10 목','7/11 금','7/12 토','7/13 일'];
+  const AUTO  = [136,148,141,152,158, 34, 12, 149,161,144,157,166, 38, 96];
+  const REV   = [  9,  8, 10,  7,  9,  2,  1,   8,  9,  8,  7, 10,  2,  5];
+
+  (function drawBars(){
+    const svg = document.getElementById('volChart');
+    const W = 860, H = 280, padL = 46, padR = 10, padT = 14, padB = 34;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const max = 180; // y축 상한 (여유 포함)
+    const n = DAYS.length;
+    const slot = plotW / n, barW = Math.min(38, slot * 0.62);
+    let out = '';
+
+    // y 그리드 (희미하게) + 라벨
+    [0, 60, 120, 180].forEach(v => {
+      const y = padT + plotH * (1 - v / max);
+      out += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="#E4E9F0" stroke-width="1"/>`;
+      out += `<text x="${padL - 8}" y="${y + 4}" text-anchor="end" font-size="10.5" fill="#8593A6">${v}</text>`;
+    });
+
+    for (let i = 0; i < n; i++) {
+      const x = padL + slot * i + (slot - barW) / 2;
+      const hA = plotH * AUTO[i] / max, hR = plotH * REV[i] / max;
+      const yR = padT + plotH - hR, yA = yR - hA - 2; // 세그먼트 사이 2px 간격
+      // 검수 경유(아래) — 베이스라인 고정, 자동(위) — 상단 4px 라운드
+      out += `<g class="bar" data-i="${i}" cursor="default">
+        <rect x="${x}" y="${yR}" width="${barW}" height="${Math.max(hR,1.5)}" fill="#1D6FD6"/>
+        <path d="M${x},${yA + hA} L${x},${yA + 4} Q${x},${yA} ${x + 4},${yA} L${x + barW - 4},${yA} Q${x + barW},${yA} ${x + barW},${yA + 4} L${x + barW},${yA + hA} Z" fill="#047857"/>
+        <rect x="${x - (slot - barW) / 2}" y="${padT}" width="${slot}" height="${plotH}" fill="transparent"/>
+      </g>`;
+      // x 라벨 (격일)
+      if (i % 2 === 0 || i === n - 1) {
+        out += `<text x="${x + barW / 2}" y="${H - 12}" text-anchor="middle" font-size="10.5" fill="#8593A6">${DAYS[i].split(' ')[0]}</text>`;
+      }
+    }
+    svg.innerHTML = out;
+
+    svg.querySelectorAll('.bar').forEach(g => {
+      g.addEventListener('mousemove', e => {
+        const i = +g.dataset.i;
+        opsTip.show(`<b>${DAYS[i]}</b><br>자동 처리 ${AUTO[i]}건 · 검수 경유 ${REV[i]}건<br>합계 ${AUTO[i] + REV[i]}건 (자동 ${(AUTO[i] / (AUTO[i] + REV[i]) * 100).toFixed(1)}%)`, e.clientX, e.clientY);
+      });
+      g.addEventListener('mouseleave', () => opsTip.hide());
+    });
+  })();
+
+  // ---------- 발신처별 테이블 ----------
+  const SENDERS = [
+    ['대성철강 구매팀', 312, 96.8, '메일 정형화 우수'],
+    ['한빛산업 자재과', 268, 95.1, ''],
+    ['동아스틸 영업부', 241, 94.6, ''],
+    ['금호테크 발주담당', 187, 89.8, '단가 표기 관행 개선 협의 중'],
+    ['유진파이프', 164, 97.0, ''],
+    ['신일밸브 구매과', 141, 91.5, '신규 품목 잦음'],
+    ['서진금속', 122, 93.4, ''],
+    ['태광기공', 118, 92.9, '팩스 발주 비중 높음']
+  ];
+  document.getElementById('senderTable').innerHTML = SENDERS.map(([s, cnt, rate, note]) => `
+    <tr><td class="src" style="font-weight:700">${s}</td><td class="num">${cnt}건</td>
+    <td><div class="mini-bar"><span class="tr"><span class="fl" style="width:${rate}%"></span></span><span class="pv">${rate}%</span></div></td>
+    <td style="font-size:11.5px;color:var(--mute)">${note}</td></tr>`).join('');
+</script>
+</body>
+</html>

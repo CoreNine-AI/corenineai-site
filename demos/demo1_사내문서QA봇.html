@@ -1,0 +1,661 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CoreNine AI · 사내 문서 Q&A 봇</title>
+<style>
+  :root{
+    --bg:#F7F8FB;
+    --card:#ffffff;
+    --text:#1A1F2E;
+    --point:#3B5BFF;
+    --point-soft:#EAEEFF;
+    --sub:#6B7280;
+    --success:#0BA678;
+    --border:#E6E8EF;
+    --radius:12px;
+    --shadow:0 1px 2px rgba(16,24,40,.04), 0 8px 24px rgba(16,24,40,.06);
+    --shadow-sm:0 1px 2px rgba(16,24,40,.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", "Malgun Gothic", sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    line-height:1.55;
+  }
+  button{font-family:inherit;cursor:pointer;}
+
+  /* Header */
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 28px;
+    background:var(--card);
+    border-bottom:1px solid var(--border);
+    position:sticky;top:0;z-index:50;
+  }
+  .brand{display:flex;align-items:baseline;gap:12px;}
+  .logo{font-weight:800;font-size:22px;letter-spacing:-.5px;color:var(--point);}
+  .brand .tag{font-size:13.5px;color:var(--sub);font-weight:500;}
+  .mode-wrap{display:flex;align-items:center;gap:10px;}
+  .mode-label{font-size:13px;color:var(--sub);font-weight:500;}
+  .toggle{
+    position:relative;width:150px;height:36px;border-radius:999px;
+    background:#EEF0F5;border:1px solid var(--border);display:flex;padding:3px;
+  }
+  .toggle button{
+    flex:1;border:none;background:transparent;border-radius:999px;
+    font-size:12.5px;font-weight:600;color:var(--sub);z-index:2;transition:color .2s;
+  }
+  .toggle button.active{color:#fff;}
+  .toggle .knob{
+    position:absolute;top:3px;left:3px;width:calc(50% - 3px);height:calc(100% - 6px);
+    background:var(--point);border-radius:999px;transition:transform .22s cubic-bezier(.4,0,.2,1);
+    box-shadow:0 1px 3px rgba(59,91,255,.4);
+  }
+  .toggle.live .knob{transform:translateX(100%);}
+  .toggle.live .knob{background:var(--success);box-shadow:0 1px 3px rgba(11,166,120,.4);}
+
+  /* Layout */
+  .layout{display:flex;gap:20px;padding:20px 28px;max-width:1440px;margin:0 auto;align-items:stretch;min-height:calc(100vh - 130px);}
+  .col-docs{flex:0 0 30%;max-width:30%;}
+  .col-chat{flex:1;min-width:0;}
+
+  .panel{
+    background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+    box-shadow:var(--shadow);
+  }
+  .panel-head{padding:16px 18px 12px;}
+  .panel-head h2{margin:0;font-size:15px;font-weight:700;}
+  .panel-head p{margin:4px 0 0;font-size:12.5px;color:var(--sub);}
+
+  /* Doc cards */
+  .doc-list{padding:6px 14px 16px;display:flex;flex-direction:column;gap:10px;}
+  .doc-card{
+    border:1px solid var(--border);border-radius:10px;padding:13px 14px;cursor:pointer;
+    transition:border-color .15s, box-shadow .15s, transform .05s;background:#fff;
+    display:flex;align-items:flex-start;gap:11px;
+  }
+  .doc-card:hover{border-color:var(--point);box-shadow:0 2px 10px rgba(59,91,255,.08);}
+  .doc-card:active{transform:translateY(1px);}
+  .doc-ico{
+    flex:0 0 36px;height:36px;border-radius:9px;background:var(--point-soft);
+    display:flex;align-items:center;justify-content:center;font-size:18px;
+  }
+  .doc-meta{min-width:0;}
+  .doc-title{font-size:13.5px;font-weight:650;margin:0 0 2px;}
+  .doc-desc{font-size:11.5px;color:var(--sub);margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .doc-badge{margin-top:7px;display:inline-flex;align-items:center;gap:4px;font-size:10.5px;color:var(--success);font-weight:600;}
+  .doc-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--success);}
+  .doc-cta{margin-top:6px;font-size:11px;color:var(--point);font-weight:600;}
+
+  /* Chat */
+  .col-chat .panel{display:flex;flex-direction:column;height:100%;}
+  .chat-head{
+    padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:11px;
+  }
+  .chat-avatar{width:38px;height:38px;border-radius:10px;background:var(--point);display:flex;align-items:center;justify-content:center;color:#fff;font-size:19px;flex:0 0 38px;}
+  .chat-head h2{margin:0;font-size:15px;font-weight:700;}
+  .chat-head p{margin:2px 0 0;font-size:12px;color:var(--sub);}
+  .chat-head .live-dot{margin-left:auto;font-size:11.5px;font-weight:600;color:var(--sub);display:flex;align-items:center;gap:6px;}
+  .chat-head .live-dot .d{width:7px;height:7px;border-radius:50%;background:var(--point);}
+  .chat-head.is-live .live-dot .d{background:var(--success);}
+
+  .messages{flex:1;overflow-y:auto;padding:22px 20px;display:flex;flex-direction:column;gap:16px;background:linear-gradient(180deg,#FBFBFD,#F7F8FB);}
+  .msg{display:flex;gap:10px;max-width:82%;}
+  .msg .av{flex:0 0 30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;}
+  .msg.bot .av{background:var(--point-soft);}
+  .msg.user{align-self:flex-end;flex-direction:row-reverse;}
+  .msg.user .av{background:#EDEFF3;}
+  .bubble{
+    padding:11px 14px;border-radius:12px;font-size:13.8px;line-height:1.6;
+    box-shadow:var(--shadow-sm);white-space:pre-wrap;word-break:break-word;
+  }
+  .msg.bot .bubble{background:#fff;border:1px solid var(--border);border-top-left-radius:4px;}
+  .msg.user .bubble{background:var(--point);color:#fff;border-top-right-radius:4px;}
+  .cite{
+    display:inline-flex;align-items:center;gap:5px;margin-top:9px;padding:4px 9px;
+    background:var(--point-soft);color:var(--point);border-radius:999px;font-size:11.5px;font-weight:600;
+    cursor:pointer;border:1px solid rgba(59,91,255,.15);
+  }
+  .cite:hover{background:#dfe6ff;}
+
+  .typing{display:inline-flex;gap:4px;align-items:center;color:var(--sub);font-size:12.5px;}
+  .typing .dots{display:inline-flex;gap:3px;}
+  .typing .dots i{width:6px;height:6px;border-radius:50%;background:#C4C9D4;animation:blink 1.2s infinite;}
+  .typing .dots i:nth-child(2){animation-delay:.2s;}
+  .typing .dots i:nth-child(3){animation-delay:.4s;}
+  @keyframes blink{0%,60%,100%{opacity:.3;}30%{opacity:1;}}
+
+  /* chips */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;padding:12px 20px 4px;}
+  .chip{
+    border:1px solid var(--border);background:#fff;border-radius:999px;padding:7px 13px;
+    font-size:12.5px;color:var(--text);font-weight:500;transition:.15s;
+  }
+  .chip:hover{border-color:var(--point);color:var(--point);background:var(--point-soft);}
+
+  /* input */
+  .composer{padding:14px 20px 18px;border-top:1px solid var(--border);}
+  .composer .row{display:flex;gap:10px;}
+  .composer input[type=text]{
+    flex:1;border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:14px;
+    outline:none;transition:border-color .15s;background:#fff;color:var(--text);
+  }
+  .composer input[type=text]:focus{border-color:var(--point);box-shadow:0 0 0 3px rgba(59,91,255,.1);}
+  .send{
+    border:none;background:var(--point);color:#fff;border-radius:10px;padding:0 20px;
+    font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;
+  }
+  .send:disabled{opacity:.5;cursor:not-allowed;}
+
+  /* API key box */
+  .apikey{
+    margin-top:12px;padding:12px 14px;background:#F4FBF8;border:1px solid #CBEEDF;border-radius:10px;
+    font-size:12.5px;
+  }
+  .apikey.hidden{display:none;}
+  .apikey label{display:block;font-weight:600;margin-bottom:6px;color:#0A7D5B;}
+  .apikey .krow{display:flex;gap:8px;}
+  .apikey input{flex:1;border:1px solid #CBEEDF;border-radius:8px;padding:9px 11px;font-size:12.5px;outline:none;}
+  .apikey input:focus{border-color:var(--success);}
+  .apikey .save{background:var(--success);color:#fff;border:none;border-radius:8px;padding:0 14px;font-weight:600;font-size:12.5px;}
+  .apikey .hint{margin-top:7px;color:var(--sub);font-size:11px;}
+
+  /* modal */
+  .overlay{
+    position:fixed;inset:0;background:rgba(16,24,40,.45);display:none;align-items:center;justify-content:center;
+    z-index:100;padding:24px;
+  }
+  .overlay.open{display:flex;}
+  .modal{
+    background:#fff;border-radius:16px;max-width:640px;width:100%;max-height:82vh;display:flex;flex-direction:column;
+    box-shadow:0 20px 60px rgba(16,24,40,.3);overflow:hidden;
+  }
+  .modal-head{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+  .modal-head .doc-ico{flex:0 0 40px;height:40px;}
+  .modal-head h3{margin:0;font-size:16px;font-weight:700;}
+  .modal-head .x{margin-left:auto;border:none;background:#F1F2F6;width:32px;height:32px;border-radius:8px;font-size:16px;color:var(--sub);}
+  .modal-body{padding:22px 26px;overflow-y:auto;font-size:13.5px;line-height:1.75;color:#2A303E;}
+  .modal-body h4{font-size:14px;margin:18px 0 8px;color:var(--point);}
+  .modal-body h4:first-child{margin-top:0;}
+  .modal-body p{margin:0 0 4px;}
+  .modal-body .clause{margin:0 0 10px;}
+  .modal-body .clause b{color:var(--text);}
+
+  footer{text-align:center;padding:18px;font-size:12px;color:var(--sub);}
+
+  @media (max-width:1000px){
+    .layout{flex-direction:column;}
+    .col-docs,.col-chat{max-width:100%;flex:1 1 auto;}
+    .col-chat .panel{height:70vh;}
+  }
+</style>
+<style>body,body *{word-break:keep-all;overflow-wrap:break-word}</style></head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="logo">CoreNine AI</span>
+      <span class="tag">AI 업무 자동화 데모</span>
+    </div>
+    <div class="mode-wrap">
+      <span class="mode-label" id="modeText">시뮬레이션 모드</span>
+      <div class="toggle" id="modeToggle" role="tablist" aria-label="모드 전환">
+        <span class="knob"></span>
+        <button class="active" data-mode="sim">시뮬레이션</button>
+        <button data-mode="live">라이브</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- Left: documents -->
+    <div class="col-docs">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>📁 연결된 사내 문서</h2>
+          <p>AI가 아래 문서를 근거로 답변합니다</p>
+        </div>
+        <div class="doc-list" id="docList"></div>
+      </div>
+    </div>
+
+    <!-- Right: chat -->
+    <div class="col-chat">
+      <div class="panel">
+        <div class="chat-head" id="chatHead">
+          <div class="chat-avatar">🤖</div>
+          <div>
+            <h2>사내 규정 도우미</h2>
+            <p>휴가 · 경비 · 정보보안 규정을 질문해 보세요</p>
+          </div>
+          <div class="live-dot"><span class="d"></span><span id="liveDotText">시뮬레이션</span></div>
+        </div>
+
+        <div class="messages" id="messages"></div>
+
+        <div class="chips" id="chips"></div>
+
+        <div class="composer">
+          <div class="row">
+            <input type="text" id="qInput" placeholder="사내 규정에 대해 질문해 보세요…" autocomplete="off" />
+            <button class="send" id="sendBtn">전송</button>
+          </div>
+          <div class="apikey hidden" id="apiBox">
+            <label>🔑 Anthropic API 키 (라이브 모드)</label>
+            <div class="krow">
+              <input type="password" id="apiKey" placeholder="sk-ant-..." />
+              <button class="save" id="saveKey">저장</button>
+            </div>
+            <div class="hint">키는 브라우저(localStorage)에만 저장되며 서버로 전송되지 않습니다. 모델: claude-sonnet-5</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>본 데모는 시연용 샘플 데이터로 동작합니다 · CoreNine AI</footer>
+
+  <!-- modal -->
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="doc-ico" id="mIco">📄</div>
+        <h3 id="mTitle">문서</h3>
+        <button class="x" id="mClose">✕</button>
+      </div>
+      <div class="modal-body" id="mBody"></div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- 문서 데이터 ----------
+  var DOCS = [
+    {
+      id:"vacation",
+      icon:"🏖️",
+      title:"휴가 및 근태 규정",
+      desc:"연차 · 반차 · 병가 · 재택근무",
+      html:
+        '<h4>제1조 (목적)</h4>'+
+        '<p class="clause">본 규정은 임직원의 휴가 사용 및 근태 관리에 관한 기준을 정함을 목적으로 한다.</p>'+
+        '<h4>제2조 (근무시간)</h4>'+
+        '<p class="clause">정규 근무시간은 <b>09:00부터 18:00까지</b>(점심 12:00~13:00)로 하며, 주 40시간을 기준으로 한다.</p>'+
+        '<h4>제3조 (연차휴가)</h4>'+
+        '<p class="clause">① 1년간 80% 이상 출근한 직원에게 <b>연 15일</b>의 유급 연차휴가를 부여한다.<br>'+
+        '② 3년 이상 계속 근로한 직원에게는 2년마다 1일을 가산하며, 최대 25일을 한도로 한다.<br>'+
+        '③ 연차는 사용 3일 전까지 그룹웨어로 신청하며, 미사용 연차는 익년 정산 지급한다.</p>'+
+        '<h4>제4조 (반차 및 반반차)</h4>'+
+        '<p class="clause">① <b>반차</b>는 연차 0.5일을 사용하며 오전(09:00~14:00) 또는 오후(13:00~18:00) 중 선택한다.<br>'+
+        '② <b>반반차</b>(2시간 단위)도 허용하며 연차 0.25일로 계산한다.</p>'+
+        '<h4>제5조 (병가)</h4>'+
+        '<p class="clause">① 질병·부상 시 <b>연 최대 5일</b>의 유급 병가를 사용할 수 있다.<br>'+
+        '② 3일 이상 연속 병가는 의사 진단서를 제출해야 한다.</p>'+
+        '<h4>제6조 (재택근무)</h4>'+
+        '<p class="clause">① 재택근무는 <b>주 2일까지</b> 팀장 승인 하에 가능하다.<br>'+
+        '② 재택 시 업무 시작·종료를 메신저로 보고하고 핵심 협업시간(10:00~16:00)에는 즉시 응답 가능해야 한다.</p>'
+    },
+    {
+      id:"expense",
+      icon:"💳",
+      title:"경비 처리 지침",
+      desc:"식대 · 법인카드 · 회식비 · 교통비",
+      html:
+        '<h4>제1조 (경비 청구 원칙)</h4>'+
+        '<p class="clause">모든 경비는 실비 정산을 원칙으로 하며, 증빙(영수증·카드전표)을 <b>사용일로부터 7일 이내</b> 경비 시스템에 등록한다.</p>'+
+        '<h4>제2조 (식대)</h4>'+
+        '<p class="clause">① 야근(20:00 이후) 시 <b>1인 1만 5천원</b> 한도의 저녁 식대를 지원한다.<br>'+
+        '② 점심 식대는 급여에 포함된 복리후생비로 별도 청구하지 않는다.</p>'+
+        '<h4>제3조 (회식비)</h4>'+
+        '<p class="clause">① 팀 회식비는 <b>1인당 4만원</b>, 분기 1회를 기준으로 지원한다.<br>'+
+        '② 초과분은 팀 예산 또는 개인 부담으로 하며, 유흥주점 사용은 불가하다.</p>'+
+        '<h4>제4조 (법인카드)</h4>'+
+        '<p class="clause">① 법인카드는 업무 목적에만 사용하며 <b>주말·공휴일 사용 시 사유서</b>를 첨부한다.<br>'+
+        '② <b>건당 30만원 이상</b> 지출은 사전 품의 승인을 받아야 한다.<br>'+
+        '③ 개인 용도 사용이 확인되면 전액 환수 및 사용 정지 조치한다.</p>'+
+        '<h4>제5조 (교통비 및 출장비)</h4>'+
+        '<p class="clause">① 시내 업무 이동은 대중교통 실비, 택시는 <b>야간(22시 이후) 또는 중량물 운반 시</b>에 한한다.<br>'+
+        '② 국내 출장 시 숙박비는 <b>1박 8만원</b> 한도, KTX는 일반실을 기준으로 한다.</p>'
+    },
+    {
+      id:"security",
+      icon:"🔒",
+      title:"정보보안 규정",
+      desc:"비밀번호 · 자료 외부반출 · 계정",
+      html:
+        '<h4>제1조 (목적)</h4>'+
+        '<p class="clause">회사의 정보자산을 보호하고 정보 유출을 방지하기 위한 임직원의 준수사항을 정한다.</p>'+
+        '<h4>제2조 (비밀번호 정책)</h4>'+
+        '<p class="clause">① 계정 비밀번호는 <b>영문 대소문자·숫자·특수문자를 포함해 10자리 이상</b>으로 설정한다.<br>'+
+        '② <b>90일마다</b> 변경하며 최근 3회 사용한 비밀번호는 재사용할 수 없다.<br>'+
+        '③ 사내 주요 시스템 접속 시 2차 인증(OTP)을 필수로 적용한다.</p>'+
+        '<h4>제3조 (자료 외부 반출)</h4>'+
+        '<p class="clause">① 대외비 이상 자료를 외부로 전송·반출할 경우 <b>팀장 및 정보보안 담당자의 사전 승인</b>을 받아야 한다.<br>'+
+        '② 고객 개인정보가 포함된 파일은 <b>반드시 암호(비밀번호)를 설정</b>하여 전송하고, 비밀번호는 별도 경로로 전달한다.<br>'+
+        '③ 승인되지 않은 USB·개인 클라우드(개인 구글드라이브 등) 사용을 금지한다.</p>'+
+        '<h4>제4조 (계정 및 접근권한)</h4>'+
+        '<p class="clause">① 계정은 타인과 공유할 수 없으며 자리를 비울 때는 화면을 잠근다.<br>'+
+        '② 퇴직·부서 이동 시 접근권한은 <b>당일 즉시</b> 회수한다.</p>'+
+        '<h4>제5조 (보안 사고 신고)</h4>'+
+        '<p class="clause">랜섬웨어·피싱 등 보안 사고 발견 시 즉시 정보보안팀(보안 핫라인)으로 신고하며, 임의로 대응하지 않는다.</p>'
+    }
+  ];
+
+  // ---------- Q&A 페어 (시뮬레이션) ----------
+  // 각 항목: 키워드 배열, 답변, 근거배지(문서id + 라벨)
+  var QA = [
+    {k:["연차","연차휴가","휴가가 며칠","휴가 며칠","연차가"],
+     a:"연차휴가는 1년간 80% 이상 출근하신 경우 연 15일이 유급으로 부여됩니다. 3년 이상 근속하시면 2년마다 1일씩 가산되어 최대 25일까지 늘어납니다. 사용하시려면 3일 전까지 그룹웨어로 신청해 주세요.",
+     doc:"vacation", cite:"휴가 및 근태 규정 제3조"},
+    {k:["반차","반반차","반차는","반차 어떻게","반차 쓰"],
+     a:"반차는 연차 0.5일을 사용하며, 오전(09:00~14:00) 또는 오후(13:00~18:00) 중 선택할 수 있습니다. 2시간 단위의 반반차도 가능하며 이 경우 연차 0.25일로 계산됩니다.",
+     doc:"vacation", cite:"휴가 및 근태 규정 제4조"},
+    {k:["병가","아파","아플","진단서","몸이"],
+     a:"질병이나 부상 시 연 최대 5일의 유급 병가를 사용하실 수 있습니다. 다만 3일 이상 연속으로 병가를 쓰실 경우에는 의사 진단서를 제출하셔야 합니다.",
+     doc:"vacation", cite:"휴가 및 근태 규정 제5조"},
+    {k:["재택","재택근무","집에서","원격"],
+     a:"재택근무는 팀장 승인 하에 주 2일까지 가능합니다. 재택 시 업무 시작·종료를 메신저로 보고하시고, 핵심 협업시간인 10:00~16:00에는 즉시 응답이 가능해야 합니다.",
+     doc:"vacation", cite:"휴가 및 근태 규정 제6조"},
+    {k:["근무시간","출근","몇시","근무 시간","점심시간"],
+     a:"정규 근무시간은 09:00부터 18:00까지이며, 점심시간은 12:00~13:00입니다. 주 40시간을 기준으로 운영됩니다.",
+     doc:"vacation", cite:"휴가 및 근태 규정 제2조"},
+    {k:["야근 식대","야근식대","저녁 식대","저녁값","야근 밥","야근 저녁"],
+     a:"야근(20:00 이후) 시 1인당 1만 5천원 한도로 저녁 식대를 지원합니다. 영수증을 사용일로부터 7일 이내에 경비 시스템에 등록해 주세요. 참고로 점심 식대는 복리후생비에 포함되어 별도 청구하지 않습니다.",
+     doc:"expense", cite:"경비 처리 지침 제2조"},
+    {k:["회식비","회식","회식비 한도","팀 회식"],
+     a:"팀 회식비는 1인당 4만원, 분기 1회를 기준으로 지원됩니다. 초과분은 팀 예산 또는 개인 부담이며, 유흥주점 사용은 불가합니다.",
+     doc:"expense", cite:"경비 처리 지침 제3조"},
+    {k:["법인카드","법카","카드 사용","주말 사용","품의"],
+     a:"법인카드는 업무 목적으로만 사용하셔야 합니다. 주말·공휴일 사용 시에는 사유서를 첨부하시고, 건당 30만원 이상 지출은 사전 품의 승인이 필요합니다. 개인 용도 사용이 확인되면 전액 환수 및 사용 정지 조치됩니다.",
+     doc:"expense", cite:"경비 처리 지침 제4조"},
+    {k:["교통비","택시","출장","숙박","ktx","출장비"],
+     a:"시내 업무 이동은 대중교통 실비로 정산하며, 택시는 야간(22시 이후) 또는 중량물 운반 시에만 사용 가능합니다. 국내 출장 시 숙박비는 1박 8만원 한도이고 KTX는 일반실이 기준입니다.",
+     doc:"expense", cite:"경비 처리 지침 제5조"},
+    {k:["경비","영수증","증빙","정산","청구"],
+     a:"모든 경비는 실비 정산이 원칙이며, 영수증·카드전표 등 증빙을 사용일로부터 7일 이내에 경비 시스템에 등록하셔야 합니다.",
+     doc:"expense", cite:"경비 처리 지침 제1조"},
+    {k:["외부","반출","자료 보낼","자료 전송","메일로 보","파일 보내","대외비","개인정보"],
+     a:"대외비 이상 자료를 외부로 전송·반출하실 때는 팀장과 정보보안 담당자의 사전 승인이 필요합니다. 특히 고객 개인정보가 포함된 파일은 반드시 암호를 설정해 전송하시고, 비밀번호는 별도 경로로 전달해 주세요. 승인되지 않은 USB나 개인 클라우드 사용은 금지됩니다.",
+     doc:"security", cite:"정보보안 규정 제3조"},
+    {k:["비밀번호","패스워드","암호 정책","비번","otp","2차 인증"],
+     a:"비밀번호는 영문 대소문자·숫자·특수문자를 포함해 10자리 이상으로 설정하고, 90일마다 변경하셔야 합니다. 최근 3회 사용한 비밀번호는 재사용할 수 없으며, 주요 시스템 접속 시 2차 인증(OTP)이 필수입니다.",
+     doc:"security", cite:"정보보안 규정 제2조"},
+    {k:["계정","권한","공유","화면 잠","퇴사","부서 이동"],
+     a:"계정은 타인과 공유할 수 없으며, 자리를 비우실 때는 화면을 잠가 주세요. 퇴직이나 부서 이동 시 접근권한은 당일 즉시 회수됩니다.",
+     doc:"security", cite:"정보보안 규정 제4조"},
+    {k:["보안 사고","랜섬","피싱","해킹","보안사고","신고"],
+     a:"랜섬웨어·피싱 등 보안 사고를 발견하시면 즉시 정보보안팀 보안 핫라인으로 신고해 주세요. 임의로 대응하지 마시고 담당팀의 안내를 따르셔야 합니다.",
+     doc:"security", cite:"정보보안 규정 제5조"}
+  ];
+
+  var CHIPS = ["연차가 며칠이에요?","회식비 한도가 얼마인가요?","반차는 어떻게 쓰나요?","외부에 자료 보낼 때 규정이 있나요?"];
+
+  // ---------- DOM refs ----------
+  var docList=document.getElementById("docList");
+  var messages=document.getElementById("messages");
+  var chips=document.getElementById("chips");
+  var qInput=document.getElementById("qInput");
+  var sendBtn=document.getElementById("sendBtn");
+  var overlay=document.getElementById("overlay");
+  var mIco=document.getElementById("mIco"), mTitle=document.getElementById("mTitle"), mBody=document.getElementById("mBody");
+  var mClose=document.getElementById("mClose");
+  var toggle=document.getElementById("modeToggle");
+  var modeText=document.getElementById("modeText");
+  var chatHead=document.getElementById("chatHead");
+  var liveDotText=document.getElementById("liveDotText");
+  var apiBox=document.getElementById("apiBox");
+  var apiKeyInput=document.getElementById("apiKey");
+  var saveKeyBtn=document.getElementById("saveKey");
+
+  var MODE="sim"; // 'sim' | 'live'
+  var busy=false;
+
+  function docById(id){for(var i=0;i<DOCS.length;i++){if(DOCS[i].id===id)return DOCS[i];}return null;}
+
+  // ---------- render docs ----------
+  DOCS.forEach(function(d){
+    var el=document.createElement("div");
+    el.className="doc-card";
+    el.innerHTML=
+      '<div class="doc-ico">'+d.icon+'</div>'+
+      '<div class="doc-meta">'+
+        '<p class="doc-title">'+d.title+'</p>'+
+        '<p class="doc-desc">'+d.desc+'</p>'+
+        '<div class="doc-badge"><span class="dot"></span>연결됨</div><br>'+
+        '<span class="doc-cta">전문 보기 →</span>'+
+      '</div>';
+    el.addEventListener("click",function(){openDoc(d.id);});
+    docList.appendChild(el);
+  });
+
+  function openDoc(id){
+    var d=docById(id); if(!d)return;
+    mIco.textContent=d.icon; mTitle.textContent=d.title; mBody.innerHTML=d.html;
+    overlay.classList.add("open");
+  }
+  mClose.addEventListener("click",function(){overlay.classList.remove("open");});
+  overlay.addEventListener("click",function(e){if(e.target===overlay)overlay.classList.remove("open");});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")overlay.classList.remove("open");});
+
+  // ---------- render chips ----------
+  CHIPS.forEach(function(c){
+    var b=document.createElement("button");
+    b.className="chip"; b.textContent=c;
+    b.addEventListener("click",function(){ if(busy)return; qInput.value=c; submit(); });
+    chips.appendChild(b);
+  });
+
+  // ---------- messages ----------
+  function addUser(text){
+    var m=document.createElement("div"); m.className="msg user";
+    m.innerHTML='<div class="av">🧑</div><div class="bubble"></div>';
+    m.querySelector(".bubble").textContent=text;
+    messages.appendChild(m); scrollDown();
+  }
+
+  function addBotShell(){
+    var m=document.createElement("div"); m.className="msg bot";
+    m.innerHTML='<div class="av">🤖</div><div class="bubble"></div>';
+    messages.appendChild(m); scrollDown();
+    return m.querySelector(".bubble");
+  }
+
+  function scrollDown(){ messages.scrollTop=messages.scrollHeight; }
+
+  function searchingIndicator(){
+    var m=document.createElement("div"); m.className="msg bot";
+    m.innerHTML='<div class="av">🤖</div><div class="bubble"><span class="typing">문서 검색 중<span class="dots"><i></i><i></i><i></i></span></span></div>';
+    messages.appendChild(m); scrollDown();
+    return m;
+  }
+
+  // typewriter effect
+  function typeInto(bubble, text, citeObj, done){
+    var i=0;
+    bubble.textContent="";
+    var speed=16;
+    (function step(){
+      if(i<=text.length){
+        bubble.textContent=text.slice(0,i);
+        i++;
+        scrollDown();
+        setTimeout(step, speed);
+      } else {
+        if(citeObj){ appendCite(bubble, citeObj); }
+        if(done)done();
+      }
+    })();
+  }
+
+  function appendCite(bubble, citeObj){
+    var span=document.createElement("span");
+    span.className="cite";
+    span.innerHTML='📄 '+citeObj.label;
+    if(citeObj.docId){ span.addEventListener("click",function(){openDoc(citeObj.docId);}); }
+    bubble.appendChild(document.createElement("br"));
+    bubble.appendChild(span);
+    scrollDown();
+  }
+
+  // ---------- matching ----------
+  function matchQA(q){
+    var s=q.toLowerCase().replace(/\s+/g,"");
+    var best=null, bestScore=0;
+    QA.forEach(function(item){
+      var score=0;
+      item.k.forEach(function(kw){
+        var k=kw.toLowerCase().replace(/\s+/g,"");
+        if(s.indexOf(k)>=0){ score+=k.length; }
+      });
+      if(score>bestScore){ bestScore=score; best=item; }
+    });
+    return bestScore>0?best:null;
+  }
+
+  // ---------- submit ----------
+  function submit(){
+    var q=qInput.value.trim();
+    if(!q||busy)return;
+    addUser(q);
+    qInput.value="";
+    busy=true; sendBtn.disabled=true;
+
+    if(MODE==="live"){ handleLive(q); }
+    else { handleSim(q); }
+  }
+
+  function handleSim(q){
+    var ind=searchingIndicator();
+    setTimeout(function(){
+      messages.removeChild(ind);
+      var m=matchQA(q);
+      var bubble=addBotShell();
+      if(m){
+        var d=docById(m.doc);
+        typeInto(bubble, m.a, {label:m.cite, docId:m.doc}, finishTurn);
+      } else {
+        typeInto(bubble, "관련 규정을 찾지 못했습니다. 담당자 연결을 안내드릴까요?", null, finishTurn);
+      }
+    }, 1000);
+  }
+
+  function finishTurn(){ busy=false; sendBtn.disabled=false; qInput.focus(); }
+
+  // ---------- LIVE (Anthropic API) ----------
+  function systemPrompt(){
+    var docsText=DOCS.map(function(d){
+      // strip HTML tags for plain text
+      var tmp=document.createElement("div"); tmp.innerHTML=d.html;
+      return "【"+d.title+"】\n"+tmp.textContent.trim();
+    }).join("\n\n");
+    return "당신은 회사의 사내 규정 안내 AI 도우미입니다. 아래 제공된 사내 문서의 내용만을 근거로 한국어로 정중하게 답변하세요.\n"+
+      "- 반드시 문서에 명시된 내용에 근거해서만 답하고, 문서에 없는 내용은 추측하지 마세요.\n"+
+      "- 답변 마지막에 근거가 된 조항을 '(근거: 문서명 제O조)' 형식으로 반드시 인용하세요.\n"+
+      "- 문서에서 관련 내용을 찾지 못하면 '관련 규정을 찾지 못했습니다. 담당자 연결을 안내드릴까요?'라고 답하세요.\n\n"+
+      "=== 사내 문서 ===\n"+docsText;
+  }
+
+  function handleLive(q){
+    var key=localStorage.getItem("cloudzero_api_key")||"";
+    if(!key){
+      var ind0=null;
+      var b=addBotShell();
+      typeInto(b,"라이브 모드를 사용하려면 상단 입력창 아래에 Anthropic API 키를 입력해 주세요. 키가 없으면 시뮬레이션 모드로 시연하실 수 있습니다.",null,finishTurn);
+      return;
+    }
+    var ind=searchingIndicator();
+    fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{
+        "content-type":"application/json",
+        "x-api-key":key,
+        "anthropic-version":"2023-06-01",
+        "anthropic-dangerous-direct-browser-access":"true"
+      },
+      body:JSON.stringify({
+        model:"claude-sonnet-5",
+        max_tokens:1024,
+        system:systemPrompt(),
+        messages:[{role:"user",content:q}]
+      })
+    }).then(function(r){
+      if(!r.ok){ return r.text().then(function(t){ throw new Error("HTTP "+r.status+" "+t); }); }
+      return r.json();
+    }).then(function(data){
+      if(ind.parentNode)messages.removeChild(ind);
+      var text="";
+      if(data && data.content && data.content.length){
+        text=data.content.map(function(c){return c.text||"";}).join("");
+      }
+      if(!text)text="응답을 받지 못했습니다.";
+      var bubble=addBotShell();
+      typeInto(bubble, text, null, finishTurn);
+    }).catch(function(err){
+      if(ind.parentNode)messages.removeChild(ind);
+      var bubble=addBotShell();
+      typeInto(bubble, "⚠️ API 호출에 실패했습니다. API 키와 네트워크를 확인해 주세요. 시뮬레이션 모드로 전환하시면 준비된 답변으로 시연하실 수 있습니다.\n\n("+err.message.slice(0,160)+")", null, finishTurn);
+    });
+  }
+
+  // ---------- mode toggle ----------
+  Array.prototype.forEach.call(toggle.querySelectorAll("button"),function(btn){
+    btn.addEventListener("click",function(){
+      if(busy)return;
+      setMode(btn.getAttribute("data-mode"));
+    });
+  });
+
+  function setMode(mode){
+    MODE=mode;
+    var btns=toggle.querySelectorAll("button");
+    Array.prototype.forEach.call(btns,function(b){
+      b.classList.toggle("active", b.getAttribute("data-mode")===mode);
+    });
+    if(mode==="live"){
+      toggle.classList.add("live");
+      modeText.textContent="라이브 모드";
+      chatHead.classList.add("is-live");
+      liveDotText.textContent="라이브";
+      apiBox.classList.remove("hidden");
+    } else {
+      toggle.classList.remove("live");
+      modeText.textContent="시뮬레이션 모드";
+      chatHead.classList.remove("is-live");
+      liveDotText.textContent="시뮬레이션";
+      apiBox.classList.add("hidden");
+    }
+  }
+
+  // ---------- api key persistence ----------
+  (function(){
+    var saved=localStorage.getItem("cloudzero_api_key");
+    if(saved)apiKeyInput.value=saved;
+  })();
+  saveKeyBtn.addEventListener("click",function(){
+    var v=apiKeyInput.value.trim();
+    localStorage.setItem("cloudzero_api_key",v);
+    saveKeyBtn.textContent="저장됨 ✓";
+    setTimeout(function(){saveKeyBtn.textContent="저장";},1500);
+  });
+
+  // ---------- events ----------
+  sendBtn.addEventListener("click",submit);
+  qInput.addEventListener("keydown",function(e){ if(e.key==="Enter")submit(); });
+
+  // ---------- greeting ----------
+  (function greet(){
+    var bubble=addBotShell();
+    var msg="안녕하세요! 사내 규정 안내 AI 도우미입니다. 😊\n휴가·경비·정보보안 규정에 대해 무엇이든 물어보세요. 아래 추천 질문을 눌러보셔도 좋습니다.";
+    typeInto(bubble, msg, null, function(){ qInput.focus(); });
+  })();
+
+})();
+</script>
+</body>
+</html>

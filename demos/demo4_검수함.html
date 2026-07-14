@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>검수함 · 운영 콘솔 — CoreNine AI 구축 구현물</title>
+<link rel="stylesheet" href="assets/ops.css">
+<style>
+  .rv-grid{display:grid;grid-template-columns:340px 1fr;gap:14px;margin-top:18px;align-items:start}
+
+  /* 좌: 대기 목록 */
+  .q-item{padding:13px 16px;border-top:1px solid var(--line);cursor:pointer}
+  .q-item:first-of-type{border-top:none}
+  .q-item:hover{background:var(--bg)}
+  .q-item.sel{background:var(--brand-soft);box-shadow:inset 3px 0 0 var(--brand-strong)}
+  .q-item .t{display:flex;justify-content:space-between;gap:8px;font-weight:800;font-size:12.5px}
+  .q-item .why{margin-top:3px;font-size:11.5px;color:var(--amber);font-weight:600}
+  .q-item .meta{margin-top:4px;font-size:11px;color:var(--mute)}
+  .q-empty{padding:36px 18px;text-align:center;color:var(--mute);font-size:12.5px}
+
+  /* 우: 비교 뷰 */
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:0}
+  .cmp>div{padding:16px 18px}
+  .cmp .src-doc{border-right:1px solid var(--line);background:#FBFCFE}
+  .cmp h4{font-size:11px;letter-spacing:.08em;color:var(--mute);font-weight:800;margin-bottom:10px}
+  .mail{font-size:12.5px;line-height:1.9;color:var(--sub);background:#fff;border:1px solid var(--line);
+    border-radius:10px;padding:14px 16px;font-family:var(--mono);white-space:pre-wrap}
+  .mail mark{background:var(--amber-soft);color:var(--amber);font-weight:800;padding:1px 3px;border-radius:3px}
+  .fields{width:100%}
+  .fields td,.fields th{padding:8px 10px;font-size:12.5px}
+  .fields .fk{color:var(--mute);font-weight:700;width:86px}
+  .fields .fv{font-weight:700}
+  .fields tr.warn .fv{color:var(--amber)}
+  .fields tr.warn td{background:var(--amber-soft)}
+  .fields input{border:1.5px solid var(--amber);border-radius:7px;padding:5px 8px;font-size:12.5px;
+    font-family:inherit;font-weight:700;width:100%;max-width:170px}
+  .cmp-foot{grid-column:1/-1;border-top:1px solid var(--line);padding:14px 18px;
+    display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  .cmp-foot .note{font-size:11.5px;color:var(--mute)}
+  .cmp-empty{padding:60px 20px;text-align:center;color:var(--mute)}
+
+  /* 하: 처리 이력 */
+  .hist-act{font-weight:800}
+  .hist-act.ap{color:var(--brand-strong)}
+  .hist-act.ed{color:var(--blue)}
+  .hist-act.mn{color:var(--amber)}
+
+  @media (max-width:1050px){.rv-grid{grid-template-columns:1fr}}
+  @media (max-width:760px){.cmp{grid-template-columns:1fr}.cmp .src-doc{border-right:none;border-bottom:1px solid var(--line)}}
+</style>
+</head>
+<body data-ops="review">
+
+<div class="layout">
+  <main>
+    <div class="head">
+      <div>
+        <h1>검수함</h1>
+        <p>확신도 90% 미만 · 규칙 위반 건만 사람에게 옵니다 — 원문과 추출 결과를 비교해 승인하세요</p>
+      </div>
+      <span class="live"><i></i>실시간 유입 중</span>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="k">검수 대기</div><div class="v" id="kWait">3<small> 건</small></div><div class="d" style="color:var(--amber)">평균 대기 4분</div></div>
+      <div class="kpi"><div class="k">오늘 검수 처리</div><div class="v" id="kDone">11<small> 건</small></div><div class="d">승인 8 · 수정 2 · 수동 1</div></div>
+      <div class="kpi"><div class="k">검수 건 비율</div><div class="v">5.4<small> %</small></div><div class="d">문서 100건 중 5건만 사람 손</div></div>
+      <div class="kpi"><div class="k">건당 검수 시간</div><div class="v">42<small> 초</small></div><div class="d">원문 대조가 화면에 준비된 덕분</div></div>
+    </div>
+
+    <div class="rv-grid">
+      <div class="panel">
+        <div class="panel-h"><b>대기 목록</b><span id="qCount">3건</span></div>
+        <div id="queue"></div>
+      </div>
+
+      <div class="panel" id="detailPanel">
+        <div class="panel-h"><b>원문 ↔ 추출 결과 비교</b><span id="dTitle">건을 선택하세요</span></div>
+        <div id="detail"><div class="cmp-empty">왼쪽 대기 목록에서 검수할 건을 선택하세요</div></div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:14px">
+      <div class="panel-h"><b>오늘 검수 처리 이력</b><span>모든 판단은 감사 로그에 함께 기록됩니다</span></div>
+      <table>
+        <thead><tr><th>시각</th><th>문서</th><th>발신처</th><th>사유</th><th>판정</th><th>처리자</th></tr></thead>
+        <tbody id="hist">
+          <tr><td class="num">10:42</td><td class="doc-id">PO-2836</td><td class="src">태광기공</td><td>납기일 두 곳 상충</td><td><span class="hist-act ap">승인</span></td><td>김대리</td></tr>
+          <tr><td class="num">10:18</td><td class="doc-id">PO-2831</td><td class="src">서진금속</td><td>단가 표기 모호</td><td><span class="hist-act ed">수정 후 승인</span></td><td>김대리</td></tr>
+          <tr><td class="num">09:55</td><td class="doc-id">PO-2827</td><td class="src">유진파이프</td><td>품목 코드 미등록</td><td><span class="hist-act ap">승인</span></td><td>박과장</td></tr>
+          <tr><td class="num">09:31</td><td class="doc-id">PO-2820</td><td class="src">신일밸브 구매과</td><td>수량 단위 불명확</td><td><span class="hist-act mn">수동 처리 전환</span></td><td>김대리</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script src="assets/ops.js"></script>
+<script>
+  // ---------- 검수 대기 시뮬레이션 데이터 ----------
+  // 각 건: 원문(메일/팩스 발췌)과 추출 필드. warnKey = 확신도 낮은 필드
+  const CASES = [
+    {
+      id: 2841, sender: '신일밸브 구매과', conf: 84, why: '품목 코드 미등록 신규 품목',
+      mail: `발신: 신일밸브 구매과 &lt;purchase@shinil-v.co.kr&gt;
+제목: [발주] 7월 3차 자재 발주 건
+
+항상 감사합니다. 아래와 같이 발주드립니다.
+
+1. 게이트밸브 GV-100A 10EA @84,000
+2. 글로브밸브 GLV-50 20EA @31,500
+3. <mark>체크밸브 신형 CV-80N</mark> 8EA @52,000
+   * 신규 품목입니다. 등록 부탁드립니다.
+
+납기: 7/18(금) 시화공장 직납`,
+      fields: [
+        ['발주번호','PO-2841',false],['발신처','신일밸브 구매과',false],
+        ['품목 3','체크밸브 CV-80N (신규)',true],['수량','8 EA',false],
+        ['단가','52,000원',false],['납기','2026-07-18 · 시화공장',false]],
+      warnNote: '품목 마스터에 없는 신규 코드 — ERP 품목 등록 후 승인 필요'
+    },
+    {
+      id: 2838, sender: '금호테크 발주담당', conf: 88, why: '단가 표기 모호 (₩/개 vs ₩/박스)',
+      mail: `발신: 금호테크 발주담당 &lt;order@kumhotech.kr&gt;
+제목: 소모품 발주 요청드립니다
+
+수고 많으십니다.
+
+- 절삭유 K-CUT 20L : 6개
+- 용접봉 E4316 (5kg 박스) : 12
+  <mark>단가 38,000원</mark> 으로 알고 있습니다
+
+이번 주 내 입고 부탁드립니다.`,
+      fields: [
+        ['발주번호','PO-2838',false],['발신처','금호테크 발주담당',false],
+        ['품목 2','용접봉 E4316 5kg',false],['수량','12 박스',false],
+        ['단가','38,000원 / 박스?',true],['납기','2026-07-17 (금주 내)',false]],
+      warnNote: '단가 기준 단위가 원문에 명시되지 않음 — 개당인지 박스당인지 확인'
+    },
+    {
+      id: 2849, sender: '대성철강 구매팀', conf: 82, why: '납기일 두 곳 상충',
+      mail: `발신: 대성철강 구매팀 &lt;po@daesungsteel.co.kr&gt;
+제목: 긴급 발주 — 배관자재
+
+아래 긴급 발주합니다.
+
+탄소강관 SPP 50A x 6m : 40본
+엘보 50A : 80EA
+
+<mark>납기 7/16까지 필수</mark>입니다.
+(첨부 발주서상 납기는 7/21로 되어 있으나
+ 현장 사정상 앞당겨 부탁드립니다)`,
+      fields: [
+        ['발주번호','PO-2849',false],['발신처','대성철강 구매팀',false],
+        ['품목 1','탄소강관 SPP 50A×6m',false],['수량','40 본',false],
+        ['납기(본문)','2026-07-16',true],['납기(첨부)','2026-07-21',true]],
+      warnNote: '본문과 첨부 발주서의 납기가 상충 — 우선 적용할 날짜 선택 필요'
+    }
+  ];
+
+  let queueData = CASES.slice();
+  let selectedId = null;
+  let doneCount = 11, ap = 8, ed = 2, mn = 1;
+
+  const queueEl = document.getElementById('queue');
+  const detailEl = document.getElementById('detail');
+  const dTitle = document.getElementById('dTitle');
+
+  function renderQueue() {
+    document.getElementById('qCount').textContent = queueData.length + '건';
+    document.getElementById('kWait').innerHTML = queueData.length + '<small> 건</small>';
+    queueEl.innerHTML = queueData.length ? queueData.map(c => `
+      <div class="q-item${c.id === selectedId ? ' sel' : ''}" onclick="select(${c.id})">
+        <div class="t"><span>PO-${c.id} · ${c.sender}</span><span class="conf lo">${c.conf}%</span></div>
+        <div class="why">⚠ ${c.why}</div>
+        <div class="meta">품목 ${c.fields.length - 3}건 안팎 · 클릭해서 원문 비교</div>
+      </div>`).join('')
+      : '<div class="q-empty">검수 대기 건이 없습니다 — 전부 자동 처리되었습니다 ✓</div>';
+  }
+
+  window.select = id => {
+    selectedId = id;
+    const c = queueData.find(x => x.id === id);
+    if (!c) return;
+    dTitle.textContent = `PO-${c.id} · 확신도 ${c.conf}%`;
+    detailEl.innerHTML = `
+      <div class="cmp">
+        <div class="src-doc">
+          <h4>원문 (수신 메일)</h4>
+          <div class="mail">${c.mail}</div>
+        </div>
+        <div>
+          <h4>AI 추출 결과 — <span style="color:var(--amber)">주황 필드</span>가 확신도 낮은 항목</h4>
+          <table class="fields">
+            ${c.fields.map(([k, v, warn], i) => `
+              <tr${warn ? ' class="warn"' : ''}>
+                <td class="fk">${k}</td>
+                <td class="fv">${warn ? `<input value="${v}" id="f${c.id}_${i}">` : v}</td>
+              </tr>`).join('')}
+          </table>
+          <p style="margin-top:12px;font-size:12px;color:var(--amber);font-weight:700">⚠ ${c.warnNote}</p>
+        </div>
+        <div class="cmp-foot">
+          <span class="note">승인 시 ERP 구매 모듈에 기록되고, 수정 내역은 감사 로그에 남습니다</span>
+          <span style="display:flex;gap:8px">
+            <button class="obtn ok" onclick="resolve(${c.id},'ap')">승인 → ERP 기록</button>
+            <button class="obtn" onclick="resolve(${c.id},'ed')">수정 후 승인</button>
+            <button class="obtn" onclick="resolve(${c.id},'mn')">수동 처리로 전환</button>
+          </span>
+        </div>
+      </div>`;
+    renderQueue();
+  };
+
+  const ACT = { ap: ['승인', 'ap'], ed: ['수정 후 승인', 'ed'], mn: ['수동 처리 전환', 'mn'] };
+  window.resolve = (id, act) => {
+    const i = queueData.findIndex(c => c.id === id);
+    if (i < 0) return;
+    const c = queueData[i];
+    queueData.splice(i, 1);
+    doneCount++;
+    if (act === 'ap') ap++; else if (act === 'ed') ed++; else mn++;
+    document.getElementById('kDone').innerHTML = doneCount + '<small> 건</small>';
+    document.querySelector('#kDone').closest('.kpi').querySelector('.d').textContent =
+      `승인 ${ap} · 수정 ${ed} · 수동 ${mn}`;
+    document.getElementById('hist').insertAdjacentHTML('afterbegin', `
+      <tr class="new-row"><td class="num">${opsNow().slice(0,5)}</td><td class="doc-id">PO-${c.id}</td>
+      <td class="src">${c.sender}</td><td>${c.why}</td>
+      <td><span class="hist-act ${ACT[act][1]}">${ACT[act][0]}</span></td><td>김대리</td></tr>`);
+    selectedId = null;
+    dTitle.textContent = '건을 선택하세요';
+    detailEl.innerHTML = '<div class="cmp-empty">처리 완료 — 다음 건을 선택하세요 ✓</div>';
+    renderQueue();
+    opsToast(`PO-${c.id} ${ACT[act][0]} 처리 — 감사 로그에 기록되었습니다`);
+  };
+
+  // 신규 검수 건 유입 시뮬레이션
+  const POOL = [
+    { sender: '동아스틸 영업부', why: '수량 단위 불명확 (EA/SET)', warnNote: '수량 단위가 원문에 명시되지 않음 — EA인지 SET인지 확인' },
+    { sender: '한빛산업 자재과', why: '단가 표기 모호 (₩/개 vs ₩/박스)', warnNote: '단가 기준 단위가 원문에 명시되지 않음' },
+    { sender: '태광기공', why: '품목 코드 미등록 신규 품목', warnNote: '품목 마스터에 없는 신규 코드 — 등록 후 승인 필요' }
+  ];
+  let nextId = 2852;
+  setInterval(() => {
+    if (queueData.length >= 5) return;
+    const p = POOL[Math.floor(Math.random() * POOL.length)];
+    const conf = 79 + Math.floor(Math.random() * 10);
+    queueData.push({
+      id: nextId, sender: p.sender, conf, why: p.why, warnNote: p.warnNote,
+      mail: `발신: ${p.sender}\n제목: 자재 발주 건\n\n(신규 수신 문서 — 데모 시뮬레이션)\n<mark>${p.why}</mark> 항목이 포함되어\n검수함으로 분기되었습니다.`,
+      fields: [
+        ['발주번호', 'PO-' + nextId, false], ['발신처', p.sender, false],
+        ['품목 1', '자재 (시뮬레이션)', false], ['확인 필드', p.why, true]]
+    });
+    opsToast(`PO-${nextId} 신규 검수 건 도착 (확신도 ${conf}%)`);
+    nextId++;
+    renderQueue();
+  }, 18000);
+
+  renderQueue();
+</script>
+</body>
+</html>

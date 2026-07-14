@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 88 88">
+  <defs>
+    <linearGradient id="cnArc" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#047857"/>
+      <stop offset="1" stop-color="#0BB985"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(44,38)">
+    <circle r="21" fill="none" stroke="url(#cnArc)" stroke-width="11"/>
+    <path d="M 21 2 L 21 26" fill="none" stroke="#C9F24E" stroke-width="11" stroke-linecap="round"/>
+    <circle r="9" fill="#0D1B2A"/>
+  </g>
+</svg>

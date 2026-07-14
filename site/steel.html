@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>철강·금속 유통 AI 자동화 — 밀시트 검수·성적서 매칭·강재 견적 | CoreNine AI</title>
+<meta name="description" content="밀시트(강재성적서) 검수, 성적서-발주 매칭, 강재 견적 — 철강·금속 유통 상사의 수기 반복 업무를 AI 시스템으로 자동화합니다. 20분 진단 미팅으로 시작하세요.">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@700;800;900&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  /* ============================================================
+     STEEL — CoreNine AI 철강·금속 유통 전용 페이지
+     본 페이지는 의도적으로 메인 사이트와 다른 디자인 체계를 쓴다:
+     강철 차콜 지면 + 쇳물 오렌지 + 도면 표제란 라벨 + 모노 데이터.
+     ============================================================ */
+  :root{
+    --steel-950:#1D232C;      /* 페이지 배경 — 블루 틴트 차콜 */
+    --steel-900:#242B35;      /* 섹션 배경 */
+    --steel-800:#2D3541;      /* 패널 */
+    --steel-700:#39424F;      /* 경계 위 패널 */
+    --line:#424D5B;           /* 헤어라인 */
+    --ink:#F1F4F7;            /* 본문 밝은 텍스트 */
+    --sub:#ADB8C5;            /* 보조 텍스트 */
+    --faint:#7E8A99;          /* 흐린 텍스트/라벨 */
+    --molten:#FF7A1A;         /* 쇳물 오렌지 — 유일한 액센트 */
+    --molten-deep:#D45B05;
+    --plate:#F4F3F0;          /* 문서(밀시트) 지면 — 오프화이트 */
+    --plate-ink:#22272E;      /* 문서 위 잉크 */
+    --plate-line:#D8D5CE;
+    --pass:#2FBF83;           /* 판정 OK (데이터 색) */
+    --warnc:#E5A50A;          /* 판정 확인 필요 */
+    --disp:'Gothic A1','Pretendard Variable',sans-serif;
+    --body:'Pretendard Variable',Pretendard,-apple-system,'Malgun Gothic',sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--body);background:var(--steel-950);color:var(--ink);
+    line-height:1.7;word-break:keep-all;-webkit-font-smoothing:antialiased;font-size:16px;letter-spacing:-.01em}
+  ::selection{background:var(--molten);color:#141414}
+  a{color:inherit}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--molten);outline-offset:3px;border-radius:2px}
+  .wrap{max-width:1160px;margin:0 auto;padding:0 24px}
+
+  /* 강판 질감: 아주 옅은 사선 헤어라인 */
+  .textured{position:relative}
+  .textured::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;
+    background:repeating-linear-gradient(115deg,transparent 0 42px,rgba(255,255,255,.025) 42px 43px)}
+
+  /* ---------- 상단 바 ---------- */
+  .topbar{position:sticky;top:0;z-index:40;background:rgba(29,35,44,.9);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .topbar .in{display:flex;align-items:center;gap:18px;height:70px}
+  .lockup{display:flex;align-items:center;gap:10px;text-decoration:none}
+  .lockup svg{width:33px;height:33px}
+  .lockup .nm{font-family:var(--disp);font-weight:800;font-size:19px;letter-spacing:-.02em}
+  .lockup .nm em{font-style:normal;color:var(--molten)}
+  .top-tag{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.14em;
+    border-left:1px solid var(--line);padding-left:16px}
+  .top-links{margin-left:auto;display:flex;align-items:center;gap:20px}
+  .top-links a{font-size:14px;color:var(--sub);text-decoration:none;font-weight:600}
+  .top-links a:hover{color:var(--ink)}
+  .top-cta{background:var(--molten);color:#161006!important;font-weight:800;font-size:14px;
+    padding:9px 18px;border-radius:4px;text-decoration:none;transition:filter .15s}
+  .top-cta:hover{filter:brightness(1.1)}
+
+  /* ---------- 도면 표제란 (섹션 라벨) — 이 페이지의 구조 언어 ---------- */
+  .tblock{display:inline-grid;grid-template-columns:auto auto;border:1px solid var(--line);margin-bottom:26px}
+  .tblock>span{padding:7px 14px;font-family:var(--mono);font-size:11px;letter-spacing:.16em}
+  .tblock .no{border-right:1px solid var(--line);color:var(--molten)}
+  .tblock .ttl{color:var(--sub)}
+
+  section{padding:96px 0}
+  h2.sec-h{font-family:var(--disp);font-weight:900;font-size:clamp(26px,3.6vw,38px);
+    line-height:1.42;letter-spacing:-.02em}
+  h2.sec-h em{font-style:normal;color:var(--molten)}
+  .sec-d{margin-top:16px;color:var(--sub);font-size:15.5px;max-width:640px;line-height:1.9}
+
+  /* ---------- 히어로 ---------- */
+  .hero{padding:84px 0 90px;border-bottom:1px solid var(--line);overflow:hidden}
+  .hero .in{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+  .crumb{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;color:var(--faint);margin-bottom:26px}
+  .crumb a{color:var(--faint);text-decoration:none}
+  .crumb a:hover{color:var(--sub)}
+  .hero h1{font-family:var(--disp);font-weight:900;font-size:clamp(34px,4.6vw,52px);
+    line-height:1.32;letter-spacing:-.025em}
+  .hero h1 .hot{color:var(--molten);position:relative;white-space:nowrap}
+  .hero .lede{margin-top:24px;font-size:16.5px;color:var(--sub);max-width:520px;line-height:1.95}
+  .hero .lede b{color:var(--ink)}
+  .hero-ctas{margin-top:38px;display:flex;gap:14px;flex-wrap:wrap}
+  .btn-hot{display:inline-flex;align-items:center;gap:9px;background:var(--molten);color:#161006;
+    font-weight:800;font-size:15px;padding:15px 28px;border-radius:4px;text-decoration:none;
+    box-shadow:0 10px 34px rgba(255,122,26,.28);transition:transform .15s,filter .15s}
+  .btn-hot:hover{transform:translateY(-2px);filter:brightness(1.07)}
+  .btn-line{display:inline-flex;align-items:center;gap:9px;border:1px solid var(--line);color:var(--ink);
+    font-weight:700;font-size:14.5px;padding:15px 26px;border-radius:4px;text-decoration:none;transition:border-color .15s}
+  .btn-line:hover{border-color:var(--sub)}
+  .hero-note{margin-top:20px;font-family:var(--mono);font-size:11.5px;color:var(--faint);letter-spacing:.06em}
+
+  /* ---------- 시그니처: 밀시트 실시간 검수 카드 ---------- */
+  .ms-stage{position:relative}
+  .ms-stage::after{content:"";position:absolute;left:8%;right:8%;bottom:-34px;height:60px;
+    background:radial-gradient(50% 100% at 50% 0,rgba(255,122,26,.16),transparent 70%);pointer-events:none}
+  .ms-doc{background:var(--plate);color:var(--plate-ink);border-radius:6px;
+    box-shadow:0 30px 80px rgba(0,0,0,.55),0 2px 0 rgba(255,255,255,.06) inset;
+    font-family:var(--mono);overflow:hidden;transform:rotate(-.4deg)}
+  .ms-doc .head{padding:16px 20px 13px;border-bottom:2px solid var(--plate-ink)}
+  .ms-doc .head .t1{font-size:12.5px;font-weight:700;letter-spacing:.18em}
+  .ms-doc .head .t2{display:flex;justify-content:space-between;gap:10px;margin-top:7px;
+    font-size:11px;color:#6B7280;letter-spacing:.04em;flex-wrap:wrap}
+  .ms-doc .head .t2 b{color:var(--plate-ink)}
+  .ms-rows{padding:6px 0}
+  .ms-row{display:flex;justify-content:space-between;align-items:center;gap:12px;
+    padding:10px 20px;font-size:12px;border-bottom:1px dashed var(--plate-line)}
+  .ms-row:last-child{border-bottom:none}
+  .ms-row .k{color:#6B7280;flex:none}
+  .ms-row .v{margin-left:auto;text-align:right;color:var(--plate-ink);font-weight:600}
+  .ms-row .st{flex:none;width:96px;text-align:right;font-weight:700;font-size:11px;opacity:0;transform:translateX(6px)}
+  .ms-row.on .st{opacity:1;transform:none;transition:all .4s ease}
+  .ms-row .st.ok{color:var(--pass)}
+  .ms-row .st.warn{color:#B7791F}
+  .ms-row.on.flag{background:#FBF3DC}
+  .ms-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;
+    padding:12px 20px;border-top:2px solid var(--plate-ink);font-size:11px;flex-wrap:wrap}
+  .ms-foot .lab{color:#6B7280;letter-spacing:.08em}
+  .ms-foot .res{font-weight:700;opacity:0}
+  .ms-foot .res.on{opacity:1;transition:opacity .4s}
+  .ms-foot .res b{color:var(--molten-deep)}
+  .ms-caption{margin-top:46px;text-align:center;font-family:var(--mono);font-size:11.5px;
+    color:var(--faint);letter-spacing:.08em}
+  .ms-caption b{color:var(--molten);font-weight:600}
+
+  /* ---------- 근거 스트립 (리서치 수치) ---------- */
+  .facts{border-bottom:1px solid var(--line);background:var(--steel-900)}
+  .facts .in{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+  .fact{padding:34px 30px;border-left:1px solid var(--line)}
+  .fact:first-child{border-left:none}
+  .fact .n{font-family:var(--mono);font-size:26px;font-weight:600;color:var(--ink);letter-spacing:-.02em}
+  .fact .n em{font-style:normal;color:var(--molten)}
+  .fact p{margin-top:8px;font-size:12.5px;color:var(--sub);line-height:1.75}
+  .fact .src{display:block;margin-top:6px;font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.06em}
+
+  /* ---------- 페인: 유통 상사의 하루 ---------- */
+  .pains{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);
+    border:1px solid var(--line);margin-top:44px}
+  .pain{background:var(--steel-900);padding:34px 30px;position:relative;transition:background .2s}
+  .pain:hover{background:var(--steel-800)}
+  .pain .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;color:var(--molten)}
+  .pain h3{font-family:var(--disp);font-weight:800;font-size:18px;line-height:1.5;margin-top:14px}
+  .pain p{margin-top:12px;font-size:13.5px;color:var(--sub);line-height:1.85}
+  .pain .now{margin-top:18px;padding-top:14px;border-top:1px dashed var(--line);
+    font-family:var(--mono);font-size:11px;color:var(--faint);line-height:1.9;letter-spacing:.02em}
+  .pain .now b{color:var(--sub);font-weight:600}
+
+  /* ---------- 자동화 3종 ---------- */
+  .sols{display:flex;flex-direction:column;gap:22px;margin-top:44px}
+  .sol{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);background:var(--steel-900)}
+  .sol .txt{padding:42px 40px}
+  .sol .doc-no{display:flex;gap:0;border:1px solid var(--line);width:max-content;margin-bottom:22px}
+  .sol .doc-no span{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;padding:5px 12px}
+  .sol .doc-no .a{color:var(--molten);border-right:1px solid var(--line)}
+  .sol .doc-no .b{color:var(--faint)}
+  .sol h3{font-family:var(--disp);font-weight:900;font-size:23px;line-height:1.45;letter-spacing:-.01em}
+  .sol .d{margin-top:14px;color:var(--sub);font-size:14.5px;line-height:1.9}
+  .sol ul{list-style:none;margin-top:22px;border-top:1px solid var(--line)}
+  .sol li{padding:11px 2px 11px 24px;font-size:13.5px;border-bottom:1px dashed var(--line);position:relative;color:var(--ink)}
+  .sol li::before{content:"";position:absolute;left:2px;top:20px;width:12px;height:2px;background:var(--molten)}
+  .sol li span{color:var(--faint);font-size:12px;display:block}
+  .sol .viz{border-left:1px solid var(--line);background:var(--steel-800);
+    display:flex;flex-direction:column;justify-content:center;gap:10px;padding:40px 36px}
+  .sol .viz .vh{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;color:var(--faint);margin-bottom:8px}
+  .vnode{border:1px solid var(--line);background:var(--steel-900);padding:13px 16px;
+    display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:13px}
+  .vnode .l{font-weight:700}
+  .vnode .r{font-family:var(--mono);font-size:10.5px;color:var(--faint);text-align:right;letter-spacing:.02em}
+  .vnode.hot{border-color:rgba(255,122,26,.55);background:rgba(255,122,26,.06)}
+  .vnode.hot .l{color:var(--molten)}
+  .varrow{text-align:center;color:var(--faint);font-size:12px;line-height:1;font-family:var(--mono)}
+  .sol .more{margin-top:28px;font-size:13px;color:var(--faint)}
+  .sol .more a{color:var(--molten);font-weight:700;text-decoration:none}
+  .sol .more a:hover{text-decoration:underline}
+
+  /* ---------- 콘솔 프리뷰 ---------- */
+  .console-band{border:1px solid var(--line);background:var(--steel-900);
+    display:grid;grid-template-columns:1fr 1.15fr;overflow:hidden}
+  .console-band .txt{padding:48px 44px;display:flex;flex-direction:column;justify-content:center}
+  .console-band h3{font-family:var(--disp);font-weight:900;font-size:26px;line-height:1.48}
+  .console-band p{margin-top:14px;color:var(--sub);font-size:14.5px;line-height:1.9;max-width:420px}
+  .console-band p b{color:var(--ink)}
+  .console-band .shot{padding:40px 40px 0 10px;display:flex;align-items:flex-end}
+  .console-band .shot a{display:block;border:1px solid var(--line);border-bottom:none;
+    box-shadow:0 -20px 60px rgba(0,0,0,.4);transition:transform .25s}
+  .console-band .shot a:hover{transform:translateY(-6px)}
+  .console-band .shot img{width:100%;display:block}
+
+  /* ---------- 진행 단계 ---------- */
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
+    border:1px solid var(--line);margin-top:44px;counter-reset:step}
+  .step{background:var(--steel-900);padding:30px 26px}
+  .step .no{font-family:var(--mono);font-size:11px;color:var(--molten);letter-spacing:.2em}
+  .step b{display:block;font-family:var(--disp);font-weight:800;font-size:16.5px;margin-top:12px}
+  .step p{margin-top:10px;font-size:13px;color:var(--sub);line-height:1.8}
+  .voucher{margin-top:26px;font-size:13.5px;color:var(--sub);border-left:2px solid var(--molten);padding-left:16px;line-height:1.9}
+  .voucher b{color:var(--ink)}
+
+  /* ---------- FAQ ---------- */
+  .faq{margin-top:44px;border-top:1px solid var(--line)}
+  .faq details{border-bottom:1px solid var(--line)}
+  .faq summary{cursor:pointer;padding:22px 40px 22px 2px;list-style:none;position:relative;
+    font-family:var(--disp);font-weight:800;font-size:16px;letter-spacing:-.01em}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::after{content:"+";position:absolute;right:6px;top:50%;transform:translateY(-50%);
+    font-family:var(--mono);font-size:20px;color:var(--molten);font-weight:500}
+  .faq details[open] summary::after{content:"−"}
+  .faq .a{padding:0 0 24px;font-size:14px;color:var(--sub);line-height:1.95;max-width:780px}
+
+  /* ---------- CTA ---------- */
+  .cta{border-top:1px solid var(--line);background:
+    radial-gradient(640px 300px at 82% -10%,rgba(255,122,26,.14),transparent 65%),var(--steel-900);
+    text-align:center;padding:110px 0}
+  .cta h2{font-family:var(--disp);font-weight:900;font-size:clamp(28px,4vw,42px);line-height:1.45}
+  .cta h2 em{font-style:normal;color:var(--molten)}
+  .cta p{margin-top:18px;color:var(--sub);font-size:15.5px;max-width:560px;margin-left:auto;margin-right:auto;line-height:1.9}
+  .cta .btn-hot{margin-top:36px}
+  .cta .mono-note{margin-top:22px;font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.1em}
+
+  footer{border-top:1px solid var(--line);padding:30px 0 44px}
+  footer .in{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;
+    font-size:12.5px;color:var(--faint)}
+  footer a{color:var(--sub);text-decoration:none}
+  footer a:hover{color:var(--ink)}
+
+  /* 등장 모션 */
+  .rise{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}
+  .rise.on{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){
+    .rise{opacity:1;transform:none;transition:none}
+    html{scroll-behavior:auto}
+  }
+
+  @media (max-width:980px){
+    .hero .in{grid-template-columns:1fr;gap:48px}
+    .facts .in{grid-template-columns:1fr}
+    .fact{border-left:none;border-top:1px solid var(--line)}
+    .fact:first-child{border-top:none}
+    .pains{grid-template-columns:1fr}
+    .sol{grid-template-columns:1fr}
+    .sol .viz{border-left:none;border-top:1px solid var(--line)}
+    .console-band{grid-template-columns:1fr}
+    .console-band .shot{padding:0 28px}
+    .steps{grid-template-columns:1fr 1fr}
+    .top-tag{display:none}
+  }
+  @media (max-width:600px){
+    .steps{grid-template-columns:1fr}
+    .top-links a:not(.top-cta){display:none}
+  }
+</style>
+</head>
+<body class="textured">
+
+<div class="topbar">
+  <div class="wrap in">
+    <a class="lockup" href="steel.html" aria-label="CoreNine AI Steel">
+      <svg viewBox="0 0 88 88" aria-hidden="true"><g transform="translate(44,38)">
+        <circle r="21" fill="none" stroke="#FF7A1A" stroke-width="11"/>
+        <path d="M 21 2 L 21 26" fill="none" stroke="#FF7A1A" stroke-width="11" stroke-linecap="round"/>
+        <circle r="9" fill="#EDF0F3"/></g></svg>
+      <span class="nm">CoreNine <em>Steel</em></span>
+    </a>
+    <span class="top-tag">STEEL &amp; METAL DISTRIBUTION · AX</span>
+    <nav class="top-links">
+      <a href="index.html">CoreNine AI 메인</a>
+      <a href="../demos/demo4_구축_운영콘솔.html">운영 콘솔 데모</a>
+      <a class="top-cta" href="contact.html">20분 진단 미팅</a>
+    </nav>
+  </div>
+</div>
+
+<!-- ================= 히어로 ================= -->
+<header class="hero">
+  <div class="wrap in">
+    <div>
+      <p class="crumb"><a href="index.html">CORENINE AI</a> / <a href="build.html">BUILD</a> / <span style="color:var(--molten)">STEEL</span></p>
+      <h1>밀시트, 아직 사람이<br><span class="hot">한 장씩</span> 보고 있습니까?</h1>
+      <p class="lede">
+        성적서 검수, 로트 매칭, 강재 견적 — 철강·금속 유통의 하루를 잡아먹는 서류 업무를
+        AI가 대신합니다. CoreNine AI는 <b>철강·금속 유통 상사를 첫 번째 전문 분야로 파는</b>
+        AI 구축 회사입니다.
+      </p>
+      <div class="hero-ctas">
+        <a class="btn-hot" href="contact.html">20분 진단 미팅 신청 →</a>
+        <a class="btn-line" href="../demos/demo4_구축_운영콘솔.html">운영 콘솔 데모</a>
+      </div>
+      <p class="hero-note">귀사가 받는 성적서 5장이면, 되는지 안 되는지 그 자리에서 판단해 드립니다.</p>
+    </div>
+
+    <div class="ms-stage">
+      <div class="ms-doc" id="msDoc" aria-label="밀시트 자동 검수 시연">
+        <div class="head">
+          <div class="t1">MILL TEST CERTIFICATE 검사증명서</div>
+          <div class="t2"><span>강종 <b>SS275</b></span><span>규격 <b>KS D 3503</b></span><span>HEAT NO. <b>K26-04821</b></span></div>
+        </div>
+        <div class="ms-rows">
+          <div class="ms-row"><span class="k">C</span><span class="v">0.18</span><span class="st ok">✓ 기준 내</span></div>
+          <div class="ms-row"><span class="k">Si / Mn</span><span class="v">0.21 / 0.84</span><span class="st ok">✓ 기준 내</span></div>
+          <div class="ms-row"><span class="k">P / S</span><span class="v">0.021 / 0.014</span><span class="st ok">✓ 기준 내</span></div>
+          <div class="ms-row"><span class="k">인장강도</span><span class="v">452 MPa (410–550)</span><span class="st ok">✓ 기준 내</span></div>
+          <div class="ms-row flag"><span class="k">항복강도</span><span class="v">268 MPa (≥275)</span><span class="st warn">⚠ 검수 필요</span></div>
+          <div class="ms-row"><span class="k">연신율</span><span class="v">27% (≥21)</span><span class="st ok">✓ 기준 내</span></div>
+        </div>
+        <div class="ms-foot">
+          <span class="lab">AI AUTO-CHECK</span>
+          <span class="res" id="msRes">6개 항목 검수 <b>3.2초</b> · 1건 담당자 알림</span>
+        </div>
+      </div>
+      <p class="ms-caption">성적서가 도착하면 <b>검수는 끝나 있습니다</b> — 기준 미달만 사람에게 옵니다</p>
+    </div>
+  </div>
+</header>
+
+<!-- ================= 근거 스트립 ================= -->
+<div class="facts">
+  <div class="wrap in">
+    <div class="fact rise">
+      <div class="n">5~10% → <em>3%대</em></div>
+      <p>철강 대리점 유통 마진은 3%대까지 압축됐습니다. 서류에 쓰는 인건비가 이익을 직접 갉아먹는 구조입니다.</p>
+      <span class="src">SOURCE · 페로타임즈</span>
+    </div>
+    <div class="fact rise">
+      <div class="n">밀시트 = <em>납품 조건</em></div>
+      <p>관공사·플랜트 납품은 성적서 미제출 시 납품 거부 리스크. 히트번호-출고분 매칭은 선택이 아니라 의무입니다.</p>
+      <span class="src">SOURCE · 업계 실무 관행</span>
+    </div>
+    <div class="fact rise">
+      <div class="n">해외선 이미 <em>상용화</em></div>
+      <p>미국·유럽엔 밀시트 AI 검수 전문 서비스가 이미 성숙한 시장입니다. 실험이 아니라 검증된 방식의 국내 적용입니다.</p>
+      <span class="src">SOURCE · GoSmarter · MTR.AI 등</span>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 페인 ================= -->
+<section>
+  <div class="wrap">
+    <div class="tblock rise"><span class="no">SHEET 01</span><span class="ttl">유통 상사의 하루</span></div>
+    <h2 class="sec-h rise">품목은 철이지만,<br>일은 <em>종이</em>가 만듭니다</h2>
+    <p class="sec-d rise">
+      강관·판재·형강이 오가는 만큼 밀시트와 성적서, 견적서와 거래명세서가 따라다닙니다.
+      그 서류 작업 대부분이 아직 수기와 엑셀입니다 — 저희가 자동화하는 지점이 정확히 여기입니다.
+    </p>
+    <div class="pains rise">
+      <div class="pain">
+        <span class="tag">PAIN — 검수</span>
+        <h3>밀시트가 오면, 눈으로 성분표를 대조합니다</h3>
+        <p>제강사·수입사마다 양식이 다른 성적서에서 강종·규격·성분·인장강도를 확인하고
+        규격 기준과 맞는지 사람이 판단합니다. 바쁠 때 한 줄 놓치면 그대로 출고됩니다.</p>
+        <div class="now"><b>NOW</b> PDF 열기 → 눈으로 확인 → 엑셀 전기 → 폴더 저장</div>
+      </div>
+      <div class="pain">
+        <span class="tag">PAIN — 추적</span>
+        <h3>"그 로트 성적서 주세요"에 반나절 걸립니다</h3>
+        <p>고객 감사나 클레임이 오면 몇 달 전 출고 건의 밀시트를 찾아 발주번호·도면번호와
+        연결해 증빙해야 합니다. 폴더와 캐비닛을 뒤지는 동안 고객은 기다립니다.</p>
+        <div class="now"><b>NOW</b> 장부 → 출고일 추정 → 폴더 검색 → 없으면 제강사 재요청</div>
+      </div>
+      <div class="pain">
+        <span class="tag">PAIN — 견적</span>
+        <h3>견적은 빠른 쪽이 이기는데, 계산이 느립니다</h3>
+        <p>규격·길이·수량에서 중량을 환산하고, 오늘 시세와 거래처별 단가 조건을 반영해
+        견적서를 만드는 일 — 정확해야 하고 빨라야 하는데 둘 다 사람 손에 달려 있습니다.</p>
+        <div class="now"><b>NOW</b> 중량표 엑셀 → 시세 확인 → 단가 계산 → 양식 수기 작성</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 자동화 3종 ================= -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="tblock rise"><span class="no">SHEET 02</span><span class="ttl">철강·금속 유통 특화 구축</span></div>
+    <h2 class="sec-h rise">세 가지부터 자동화합니다 —<br>귀사 서류 그대로, 귀사 <em>ERP 그대로</em></h2>
+    <p class="sec-d rise">
+      범용 솔루션을 파는 것이 아니라, 귀사가 실제로 받는 성적서와 실제로 쓰는 견적 양식으로
+      시스템을 맞춥니다. 지금 쓰시는 ERP는 바꾸지 않습니다.
+    </p>
+
+    <div class="sols">
+      <div class="sol rise">
+        <div class="txt">
+          <div class="doc-no"><span class="a">CZ-ST-01</span><span class="b">MILL SHEET CHECK</span></div>
+          <h3>성적서가 도착하면, 검수는 끝나 있습니다</h3>
+          <p class="d">
+            메일·스캔으로 들어오는 밀시트에서 강종·규격·히트번호·화학성분·기계적 성질을
+            AI가 추출해 KS·JIS·ASTM 규격 기준과 자동 대조합니다. 기준을 벗어난 항목만
+            플래그가 붙어 담당자에게 옵니다.
+          </p>
+          <ul>
+            <li>제강사·수입사별 상이한 양식 자동 인식<span>포스코 · 현대제철 · 수입밀</span></li>
+            <li>성분·인장·항복·연신율을 규격 허용치와 대조<span>C·Si·Mn·P·S / MPa / %</span></li>
+            <li>불일치·누락만 사람 검수함으로<span>나머지는 자동 통과·보관</span></li>
+          </ul>
+        </div>
+        <div class="viz">
+          <div class="vh">FLOW — 검수</div>
+          <div class="vnode"><span class="l">성적서 수신</span><span class="r">MAIL · SCAN OCR</span></div>
+          <div class="varrow">↓</div>
+          <div class="vnode hot"><span class="l">AI 추출 · 규격 대조</span><span class="r">KS D 3503 기준</span></div>
+          <div class="varrow">↓ 기준 미달만</div>
+          <div class="vnode"><span class="l">검수함 알림</span><span class="r">담당자 판정 기록</span></div>
+        </div>
+      </div>
+
+      <div class="sol rise">
+        <div class="txt">
+          <div class="doc-no"><span class="a">CZ-ST-02</span><span class="b">LOT TRACE &amp; MATCH</span></div>
+          <h3>클레임 대응 반나절 → 검색 한 번</h3>
+          <p class="d">
+            들어온 모든 성적서를 히트번호·품번·발주번호·도면번호로 연결해 검색 가능한
+            DB로 쌓습니다. 고객 감사·클레임·품질 이슈가 생겼을 때, 몇 달 전 건이라도
+            즉시 찾아 증빙 묶음까지 만들어 드립니다.
+          </p>
+          <ul>
+            <li>입고 시점 자동 색인<span>파일명 규칙을 지킬 필요 없음</span></li>
+            <li>거래처·기간·강종·로트 무엇으로든 검색<span>1초 내 원본 조회</span></li>
+            <li>출고 건별 성적서 첨부 자동 점검<span>누락 시 즉시 알림</span></li>
+          </ul>
+        </div>
+        <div class="viz">
+          <div class="vh">FLOW — 추적</div>
+          <div class="vnode"><span class="l">고객 요청</span><span class="r">"3월 출고분 증빙"</span></div>
+          <div class="varrow">↓ 검색 1초</div>
+          <div class="vnode hot"><span class="l">로트 ↔ 발주 ↔ 도면 연결 DB</span><span class="r">HEAT NO. 기준</span></div>
+          <div class="varrow">↓</div>
+          <div class="vnode"><span class="l">증빙 패키지 자동 생성</span><span class="r">성적서 + 명세 PDF</span></div>
+        </div>
+      </div>
+
+      <div class="sol rise">
+        <div class="txt">
+          <div class="doc-no"><span class="a">CZ-ST-03</span><span class="b">STEEL QUOTATION</span></div>
+          <h3>규격·수량만 넣으면 견적서가 나옵니다</h3>
+          <p class="d">
+            품목·규격·길이·수량에서 중량을 자동 환산하고, 등록된 기준 단가와 거래처별
+            조건(할인·운임·가공비)을 반영해 견적서 초안을 만듭니다. 담당자는 확인하고
+            보내기만 하면 됩니다.
+          </p>
+          <ul>
+            <li>강관·판재·형강 이론중량 자동 계산<span>규격표 내장</span></li>
+            <li>거래처별 단가 조건·가공비 자동 반영<span>절단 · 운임 포함</span></li>
+            <li>견적 이력 보존<span>"지난번 얼마였죠?"에 즉답</span></li>
+          </ul>
+          <p class="more">이 외에도 입출고·중량 재고 대장, 세금계산서 연동, 발주 메일 자동 입력까지 같은 기반에서 확장합니다.
+            <a href="build.html#systems">기반 시스템 3종 →</a></p>
+        </div>
+        <div class="viz">
+          <div class="vh">FLOW — 견적</div>
+          <div class="vnode"><span class="l">견적 요청</span><span class="r">MAIL · FAX · 메모</span></div>
+          <div class="varrow">↓</div>
+          <div class="vnode hot"><span class="l">중량 환산 · 단가 계산</span><span class="r">규격표 + 거래처 조건</span></div>
+          <div class="varrow">↓ 초안 생성</div>
+          <div class="vnode"><span class="l">담당자 확인 → 발송</span><span class="r">이력 자동 보존</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 콘솔 프리뷰 ================= -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="console-band rise">
+      <div class="txt">
+        <div class="tblock" style="margin-bottom:22px"><span class="no">SHEET 03</span><span class="ttl">구축 구현물</span></div>
+        <h3>구축이 끝나면 받는 화면을<br>지금 직접 조작해 보세요</h3>
+        <p>
+          문서 수신 → AI 추출·검증 → ERP 기록까지 <b>사람 없이 흐르는 파이프라인</b>,
+          애매한 건만 사람에게 오는 <b>검수함</b>, 처리량·정확도 리포트와 <b>전 건 감사 로그</b>.
+          화면별로 직접 들어가 보실 수 있습니다.
+        </p>
+        <div style="margin-top:30px"><a class="btn-hot" href="../demos/demo4_구축_운영콘솔.html">운영 콘솔 열어보기 →</a></div>
+      </div>
+      <div class="shot">
+        <a href="../demos/demo4_구축_운영콘솔.html" aria-label="운영 콘솔 데모 열기">
+          <img src="assets/demo4_운영콘솔_미리보기.png" alt="자동처리 파이프라인 운영 콘솔 화면" loading="lazy">
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 진행 단계 ================= -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="tblock rise"><span class="no">SHEET 04</span><span class="ttl">진행 방식</span></div>
+    <h2 class="sec-h rise">밀시트 검수 <em>하나부터</em> 시작합니다</h2>
+    <p class="sec-d rise">
+      처음부터 전체 시스템을 계약하자고 하지 않습니다. 가장 아픈 업무 하나를 짧게 구축해
+      귀사 실제 성적서로 정확도를 검증하고, 숫자가 확인된 다음에 넓힙니다.
+    </p>
+    <div class="steps rise">
+      <div class="step"><span class="no">STEP 1</span><b>현장 진단 (무료)</b><p>성적서 처리량·견적 건수·소요 시간을 함께 측정하고 자동화 목표 수치를 정합니다. 20분 미팅으로 시작합니다.</p></div>
+      <div class="step"><span class="no">STEP 2</span><b>파일럿 구축</b><p>밀시트 검수 등 한 가지 업무를 귀사 실제 문서로 구축 — 정확도와 절감 시간을 수치로 검증합니다.</p></div>
+      <div class="step"><span class="no">STEP 3</span><b>확장 구축</b><p>검증된 것만 매칭 DB·견적·재고 대장으로 확대하고 ERP와 연동합니다.</p></div>
+      <div class="step"><span class="no">STEP 4</span><b>운영 · 개선</b><p>정확도 모니터링과 규칙 업데이트로 시스템이 계속 좋아지게 관리합니다. 감사 로그가 전 건 남습니다.</p></div>
+    </div>
+    <p class="voucher rise">도입 비용을 낮출 수 있는 정부 지원사업(AI 바우처 등)이 귀사에 해당하는지도 진단 미팅에서 함께 확인해 드립니다.</p>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="tblock rise"><span class="no">SHEET 05</span><span class="ttl">자주 묻는 질문</span></div>
+    <h2 class="sec-h rise">사장님들이 실제로 물어보시는 것</h2>
+    <div class="faq rise">
+      <details>
+        <summary>우리는 직원이 몇 명 안 되는데, 이런 게 필요한가요?</summary>
+        <div class="a">인원이 아니라 문서량이 기준입니다. 소수 인원이 연 수십·수백억 물량을 돌리는 유통 상사일수록
+        한 사람이 서류에 묶이는 비용이 큽니다. 사람을 줄이는 게 아니라, 그 사람이 영업과 거래처 관리에
+        시간을 쓰게 만드는 것이 목적입니다.</div>
+      </details>
+      <details>
+        <summary>성적서 양식이 제강사마다 다르고, 수입밀은 더 제각각인데 되나요?</summary>
+        <div class="a">그래서 파일럿을 귀사가 실제로 받는 성적서로 합니다. 최근 AI 문서 인식은 양식이 달라도
+        항목을 찾아내는 수준까지 왔고, 확신이 낮은 건은 자동 처리하지 않고 사람 검수함으로 보내도록
+        설계합니다 — "전부 자동"이 아니라 "확실한 것만 자동"이 원칙입니다.</div>
+      </details>
+      <details>
+        <summary>지금 쓰는 ERP(더존 등)를 바꿔야 하나요?</summary>
+        <div class="a">바꾸지 않습니다. 지금 쓰시는 ERP·엑셀 대장에 결과를 기록하는 방식으로 붙입니다.
+        시스템 교체 없이, 서류가 ERP에 들어가기까지의 손작업 구간만 자동화합니다.</div>
+      </details>
+      <details>
+        <summary>비용은 어느 정도인가요?</summary>
+        <div class="a">파일럿(업무 1개)은 소규모 고정가로 시작하고, 효과가 수치로 검증된 뒤에만 확장을 제안합니다.
+        정확한 견적은 문서량과 연동 범위에 따라 달라져 진단 미팅에서 범위와 함께 확정해 드립니다.
+        귀사가 활용할 수 있는 정부 지원사업이 있는지도 함께 확인해 드립니다.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CTA ================= -->
+<section class="cta">
+  <div class="wrap">
+    <h2>귀사가 받는 성적서 <em>딱 다섯 장</em>이면<br>가능 여부를 판단해 드립니다</h2>
+    <p>20분 진단 미팅 — 파워포인트 없이 실제 화면만 보여드리고,
+    자동화가 가능한 범위와 예상 효과를 그 자리에서 말씀드립니다.</p>
+    <a class="btn-hot" href="contact.html">20분 진단 미팅 신청하기 →</a>
+    <p class="mono-note">NO SLIDES · REAL SCREENS ONLY · 20 MIN</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap in">
+    <span>© 2026 CoreNine AI — Steel &amp; Metal Distribution AX</span>
+    <span><a href="index.html">CoreNine AI 메인</a> · <a href="build.html">자동화 구축</a> · <a href="contact.html">상담 문의</a></span>
+  </div>
+</footer>
+
+<script>
+  // 등장 모션
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('on'); io.unobserve(e.target); } });
+  }, {threshold:.14});
+  document.querySelectorAll('.rise').forEach(function(el){ io.observe(el); });
+
+  // 시그니처: 밀시트 검수 판정이 한 줄씩 점등
+  (function(){
+    var rows = document.querySelectorAll('#msDoc .ms-row');
+    var res = document.getElementById('msRes');
+    var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function play(){
+      rows.forEach(function(r,i){
+        setTimeout(function(){ r.classList.add('on'); }, reduced ? 0 : 550 + i*420);
+      });
+      setTimeout(function(){ res.classList.add('on'); }, reduced ? 0 : 550 + rows.length*420 + 200);
+    }
+    var seen = new IntersectionObserver(function(es){
+      if(es[0].isIntersecting){ play(); seen.disconnect(); }
+    }, {threshold:.4});
+    seen.observe(document.getElementById('msDoc'));
+  })();
+</script>
+</body>
+</html>

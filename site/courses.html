@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>교육 과정 — CoreNine AI</title>
+<meta name="description" content="마케팅·기획·개발·HR·사무재무, 직무 × 난이도별 AI 실무 교육 과정 카탈로그.">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  /* 필터 바 */
+  .filter-bar{margin-top:44px;display:flex;flex-direction:column;gap:14px}
+  .filter-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .filter-row .lbl{font-size:13px;font-weight:800;color:var(--mute);width:52px;flex:none}
+  .fbtn{border:1.5px solid var(--line);background:#fff;color:var(--sub);font-weight:700;font-size:14px;
+    padding:9px 18px;border-radius:999px;cursor:pointer;transition:all .15s}
+  .fbtn:hover{border-color:var(--brand);color:var(--brand-strong)}
+  .fbtn.on{background:var(--brand);border-color:var(--brand);color:#fff}
+
+  .count-line{margin-top:28px;font-size:14px;color:var(--sub)}
+  .count-line b{color:var(--brand-strong)}
+
+  /* 카드 그리드 */
+  .cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:20px}
+  .cc{border:1px solid var(--line);border-radius:18px;background:#fff;padding:26px 26px 24px;
+    text-decoration:none;color:var(--ink);display:flex;flex-direction:column;box-shadow:var(--shadow-sm);
+    transition:transform .2s,box-shadow .2s,border-color .2s;position:relative}
+  .cc:hover{transform:translateY(-5px);box-shadow:var(--shadow-md);border-color:var(--brand-line)}
+  .cc .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .cc .cat{font-size:12.5px;font-weight:800;color:var(--brand-strong)}
+  .cc h4{margin-top:12px;font-size:18.5px;font-weight:800;letter-spacing:-.01em;line-height:1.5}
+  .cc .tag{margin-top:8px;font-size:13.5px;color:var(--sub);line-height:1.7;flex:1}
+  .cc .meta{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap}
+  .cc .go{margin-top:18px;font-weight:800;font-size:14px;color:var(--brand-strong)}
+  .cc .go::after{content:" →"}
+  .cc .star{position:absolute;top:-11px;right:18px;background:var(--brand);color:#fff;
+    font-size:11.5px;font-weight:800;letter-spacing:.06em;padding:4px 12px;border-radius:999px}
+  .empty{padding:60px 0;text-align:center;color:var(--mute);display:none}
+
+  /* 맞춤 설계 밴드 */
+  .custom-band{margin-top:64px;background:linear-gradient(120deg,var(--brand-softer),#EAF6FF);
+    border:1px solid var(--brand-line);border-radius:22px;padding:40px 44px;
+    display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}
+  .custom-band h3{font-size:21px;font-weight:800;line-height:1.5}
+  .custom-band p{margin-top:8px;color:var(--sub);font-size:14.5px;max-width:600px;line-height:1.8}
+
+  @media (max-width:960px){
+    .cat-grid{grid-template-columns:1fr}
+    .custom-band{grid-template-columns:1fr;padding:30px 26px}
+  }
+</style>
+</head>
+<body data-page="courses">
+
+<header class="page-hero">
+  <div class="wrap">
+    <div class="crumb"><a href="index.html">홈</a> / 교육 과정</div>
+    <h1>
+      직무 × 난이도로 고르는<br>
+      <span class="accent">AI 실무 교육 과정</span>
+    </h1>
+    <p class="lede">
+      모든 과정은 실습 비중 60% 이상, <b>참가자 본인의 실제 업무</b>를 과제로 진행합니다.
+      아래 카탈로그는 표준 과정이며, 진단 미팅에서 귀사 업무에 맞춰 조정됩니다.
+    </p>
+
+    <div class="filter-bar reveal">
+      <div class="filter-row" id="catFilter">
+        <span class="lbl">직무</span>
+        <button class="fbtn on" data-v="all">전체</button>
+        <button class="fbtn" data-v="common">공통·리더십</button>
+        <button class="fbtn" data-v="marketing">마케팅</button>
+        <button class="fbtn" data-v="planning">기획·PM</button>
+        <button class="fbtn" data-v="dev">개발</button>
+        <button class="fbtn" data-v="hr">HR</button>
+        <button class="fbtn" data-v="office">사무·재무</button>
+      </div>
+      <div class="filter-row" id="lvFilter">
+        <span class="lbl">난이도</span>
+        <button class="fbtn on" data-v="all">전체</button>
+        <button class="fbtn" data-v="1">입문</button>
+        <button class="fbtn" data-v="2">실무</button>
+        <button class="fbtn" data-v="3">심화</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section style="padding-top:36px">
+  <div class="wrap">
+    <p class="count-line" id="countLine"></p>
+    <div class="cat-grid" id="grid"></div>
+    <p class="empty" id="empty">조건에 맞는 과정이 없습니다. 필터를 조정해 보세요.</p>
+
+    <div class="custom-band reveal">
+      <div>
+        <h3>찾는 과정이 없다면, 만들어 드립니다</h3>
+        <p>
+          위 카탈로그는 출발점일 뿐입니다. 산업·직무·데이터 특성에 맞춰
+          커리큘럼을 새로 설계하는 것이 CoreNine AI의 표준 프로세스입니다.
+          우리 회사만의 과정이 필요하다면 그대로 말씀해 주세요.
+        </p>
+      </div>
+      <a class="btn primary" href="contact.html">맞춤 과정 상담하기</a>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="wrap">
+    <h2>어떤 과정이 맞을지 모르겠다면,<br>대상자 구성만 알려주세요</h2>
+    <p>직급 × AX 성숙도 로드맵으로 과정 편성안을 제안드립니다.</p>
+    <a class="btn primary" href="roadmap.html">교육 로드맵 보기</a>
+  </div>
+</section>
+
+<script src="assets/courses.js"></script>
+<script src="assets/site.js"></script>
+<script>
+  let fCat = 'all', fLv = 'all';
+
+  function render() {
+    const list = COURSES.filter(c =>
+      (fCat === 'all' || c.cat === fCat) && (fLv === 'all' || String(c.level) === fLv));
+    document.getElementById('grid').innerHTML = list.map(c => `
+      <a class="cc" href="course.html#${c.id}">
+        ${c.featured ? '<span class="star">대표 과정</span>' : ''}
+        <div class="top">
+          <span class="cat">${CATS[c.cat]}</span>
+          <span class="badge-level l${c.level}">${LEVELS[c.level]}</span>
+        </div>
+        <h4>${c.title}</h4>
+        <p class="tag">${c.tagline}</p>
+        <div class="meta">
+          <span class="chip">${c.hours}</span>
+          <span class="chip">${c.industry}</span>
+        </div>
+        <span class="go">과정 상세 보기</span>
+      </a>`).join('');
+    document.getElementById('countLine').innerHTML =
+      `총 <b>${list.length}개 과정</b>이 검색되었습니다`;
+    document.getElementById('empty').style.display = list.length ? 'none' : 'block';
+  }
+
+  function bindFilter(rowId, setter) {
+    const row = document.getElementById(rowId);
+    row.addEventListener('click', e => {
+      const btn = e.target.closest('.fbtn');
+      if (!btn) return;
+      row.querySelectorAll('.fbtn').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      setter(btn.dataset.v);
+      render();
+    });
+  }
+  bindFilter('catFilter', v => fCat = v);
+  bindFilter('lvFilter',  v => fLv = v);
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // URL ?cat=marketing 지원
+    const q = new URLSearchParams(location.search).get('cat');
+    if (q && CATS[q]) {
+      fCat = q;
+      document.querySelectorAll('#catFilter .fbtn').forEach(b =>
+        b.classList.toggle('on', b.dataset.v === q));
+    }
+    render();
+  });
+</script>
+</body>
+</html>

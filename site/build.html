@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>업무 자동화 구축 — CoreNine AI</title>
+<meta name="description" content="밀시트 검수, 선적서류 작성, 견적 산출 — 귀사 업(業)의 핵심 공정을 AI 시스템으로 자동화합니다. 진단부터 구축·운영까지.">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  /* 산업 특화 카드 */
+  .ind-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:52px}
+  .ind{background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;
+    box-shadow:var(--shadow-sm);display:flex;flex-direction:column;
+    transition:transform .2s,box-shadow .2s}
+  .ind:hover{transform:translateY(-5px);box-shadow:var(--shadow-md)}
+  .ind .top{padding:26px 28px 20px;background:linear-gradient(140deg,var(--brand-softer),#EAF6FF)}
+  .ind .sec-tag{font-size:11.5px;font-weight:800;letter-spacing:.14em;color:var(--brand-strong)}
+  .ind h3{margin-top:8px;font-size:20px;font-weight:800;letter-spacing:-.02em;line-height:1.4}
+  .ind .pain{margin-top:8px;font-size:13px;color:var(--sub);line-height:1.7}
+  .ind .pain b{color:var(--ink)}
+  .ind ul{list-style:none;padding:20px 28px 8px;flex:1}
+  .ind li{font-size:13.5px;padding:8px 0 8px 26px;position:relative;line-height:1.6;border-bottom:1px dashed var(--line)}
+  .ind li:last-child{border-bottom:none}
+  .ind li::before{content:"";position:absolute;left:2px;top:15px;width:13px;height:2.5px;border-radius:2px;background:var(--brand)}
+  .ind li b{display:block}
+  .ind li span{color:var(--mute);font-size:12px}
+  .ind .foot{padding:14px 28px 24px;font-size:12.5px;color:var(--mute)}
+  a.ind-link{text-decoration:none;color:inherit;position:relative;border:2px solid var(--brand);
+    box-shadow:0 12px 34px rgba(4,120,87,.14)}
+  a.ind-link .ribbon{position:absolute;top:16px;right:-1px;background:var(--forest);color:var(--lime);
+    font-size:10.5px;font-weight:800;letter-spacing:.08em;padding:5px 12px;border-radius:8px 0 0 8px}
+  .ind .foot .go{display:inline-flex;align-items:center;gap:7px;margin-top:12px;
+    background:var(--brand-strong);color:#fff;font-weight:800;font-size:13px;
+    padding:10px 18px;border-radius:10px;transition:transform .15s,box-shadow .15s}
+  a.ind-link:hover .go{transform:translateY(-2px);box-shadow:0 10px 22px rgba(4,120,87,.3)}
+  .ind-note{margin-top:24px;font-size:13px;color:var(--mute);line-height:1.8}
+
+  /* 구축 구현물 밴드 */
+  .preview-band{margin-top:0;border-radius:24px;overflow:hidden;
+    background:
+      radial-gradient(700px 380px at 88% -20%,rgba(11,185,133,.3) 0%,transparent 60%),
+      linear-gradient(140deg,var(--forest) 0%,var(--forest-2) 100%);
+    color:#fff;display:grid;grid-template-columns:1fr 1.1fr;gap:0;align-items:center}
+  .preview-band .txt{padding:52px 20px 52px 52px}
+  .preview-band .k{font-size:12px;font-weight:800;letter-spacing:.16em;color:var(--lime)}
+  .preview-band h3{margin-top:12px;font-size:27px;font-weight:800;letter-spacing:-.025em;line-height:1.45}
+  .preview-band p{margin-top:14px;font-size:14.5px;color:#A9C6B9;line-height:1.85;max-width:440px}
+  .preview-band p b{color:#fff}
+  .preview-band .shot{padding:36px 40px 36px 20px}
+  .preview-band .shot a{display:block;border-radius:14px;overflow:hidden;
+    border:1px solid rgba(255,255,255,.2);box-shadow:0 26px 60px rgba(0,0,0,.4);
+    transition:transform .25s ease}
+  .preview-band .shot a:hover{transform:translateY(-5px) scale(1.01)}
+
+  /* 시스템 유형 (기반 모듈) */
+  .sys{margin-top:40px;background:#fff;border:1px solid var(--line);border-radius:22px;
+    display:grid;grid-template-columns:1fr 1fr;overflow:hidden;box-shadow:var(--shadow-sm)}
+  .sys .info{padding:40px 38px}
+  .sys .kind{font-size:12.5px;font-weight:800;letter-spacing:.16em;color:var(--brand-strong)}
+  .sys h3{font-size:23px;font-weight:800;margin-top:12px;line-height:1.45;letter-spacing:-.01em}
+  .sys .desc{color:var(--sub);font-size:14.5px;margin-top:14px;line-height:1.85}
+  .sys .for{margin-top:18px;font-size:13px;background:var(--brand-soft);color:var(--brand-strong);
+    display:inline-block;padding:7px 14px;border-radius:8px;font-weight:800;line-height:1.6}
+  .sys .depth{margin-top:22px;border-top:1px dashed var(--line);padding-top:18px}
+  .sys .depth b{font-size:13px;letter-spacing:.06em;color:var(--brand-strong);font-weight:800}
+  .sys .depth ul{list-style:none;margin-top:10px}
+  .sys .depth li{font-size:14px;padding:5px 0 5px 22px;position:relative;line-height:1.65}
+  .sys .depth li::before{content:"";position:absolute;left:2px;top:13px;width:12px;height:2.5px;border-radius:2px;background:var(--brand)}
+  .sys .diagram{background:linear-gradient(150deg,#F1FBF6,#EAF6FF);padding:40px 34px;
+    display:flex;flex-direction:column;justify-content:center;gap:13px;border-left:1px solid var(--line)}
+  .diagram .d-title{font-size:11.5px;letter-spacing:.22em;color:var(--mute);font-weight:800;margin-bottom:6px}
+  .d-node{border:1px solid var(--line);border-radius:12px;padding:13px 16px;font-size:13.5px;
+    display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fff;box-shadow:var(--shadow-sm)}
+  .d-node .lbl{font-weight:800}
+  .d-node .det{font-size:11.5px;color:var(--mute);text-align:right}
+  .d-node.ai{border-color:var(--brand);background:var(--brand-softer)}
+  .d-node.ai .lbl{color:var(--brand-strong)}
+  .d-arrow{text-align:center;color:var(--mute);font-size:13px;line-height:1;margin:-3px 0}
+
+  /* 진행 단계 */
+  .build-steps{margin-top:52px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .bs{background:#fff;border:1px solid var(--line);border-radius:16px;padding:28px 26px;box-shadow:var(--shadow-sm)}
+  .bs .n{width:34px;height:34px;border-radius:11px;background:var(--grad-brand);color:#fff;
+    font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center}
+  .bs b{display:block;margin-top:16px;font-size:16.5px}
+  .bs p{margin-top:8px;font-size:13px;color:var(--sub);line-height:1.75}
+
+  /* 원칙 */
+  .tech-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:48px}
+  .tech-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:32px 30px;box-shadow:var(--shadow-sm)}
+  .tech-card b{font-size:16.5px}
+  .tech-card p{margin-top:10px;font-size:14px;color:var(--sub);line-height:1.85}
+
+  @media (max-width:960px){
+    .ind-grid{grid-template-columns:1fr}
+    .preview-band{grid-template-columns:1fr}
+    .preview-band .txt{padding:36px 28px 8px}
+    .preview-band .shot{padding:24px 28px 36px}
+    .sys{grid-template-columns:1fr}
+    .sys .diagram{border-left:none;border-top:1px solid var(--line)}
+    .build-steps{grid-template-columns:1fr 1fr}
+    .tech-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body data-page="build">
+
+<header class="page-hero">
+  <div class="wrap">
+    <div class="crumb"><a href="index.html">홈</a> / 업무 자동화 구축</div>
+    <h1>
+      엑셀 정리 수준이 아니라,<br>
+      <span class="accent">귀사 업(業)의 공정</span>을 자동화합니다
+    </h1>
+    <p class="lede">
+      밀시트 검수, 선적서류 작성, 견적 산출 — 그 산업 사람만 아는 반복 업무가
+      진짜 자동화 대상입니다. CoreNine AI는 귀사의 현장 워크플로를 파고들어
+      <b>저인력으로, 빠르게, 책임지고</b> 돌아가는 시스템을 구축하고 운영까지 맡습니다.
+    </p>
+    <div style="margin-top:36px;display:flex;gap:14px;flex-wrap:wrap;position:relative">
+      <a class="btn primary" href="contact.html">구축 상담 신청하기 <span class="arr">→</span></a>
+      <a class="btn ghost" href="../demos/demo4_구축_운영콘솔.html">구축 구현물 미리보기</a>
+      <a class="btn soft" href="steel.html">철강·금속 유통 전문 페이지 <span class="arr">→</span></a>
+    </div>
+  </div>
+</header>
+
+<!-- ================= 산업 특화 ================= -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow">산업 특화 자동화</div>
+    <h2 class="title">
+      산업마다 비효율의 <span class="accent">이름</span>이 다릅니다.<br>
+      우리는 그 이름부터 배웁니다
+    </h2>
+    <p class="title-desc">
+      범용 솔루션이 놓치는 지점이 여기입니다. 철강 유통의 밀시트, 무역의 B/L,
+      제조의 수입검사 성적서 — 귀사 업의 문서와 공정 그대로를 자동화 대상으로 설계합니다.
+      아래는 대표 산업의 예시이며, 어떤 산업이든 같은 방식으로 접근합니다.
+    </p>
+    <div class="ind-grid stagger">
+      <a class="ind ind-link" href="steel.html">
+        <span class="ribbon">첫 번째 전문 분야</span>
+        <div class="top">
+          <span class="sec-tag">STEEL &amp; METAL</span>
+          <h3>철강 · 금속 유통</h3>
+          <p class="pain">성적서와 대장이 <b>수기·엑셀</b>에 머물러 있는 대표 산업 —
+          로트 추적이 안 되면 클레임 대응이 늦어집니다.</p>
+        </div>
+        <ul>
+          <li><b>밀시트(강재성적서) 자동 검수</b><span>성분·인장강도 추출 → 규격 기준 자동 대조, 불일치 플래그</span></li>
+          <li><b>성적서 ↔ 도면·발주번호 매칭</b><span>로트·품번 연결 DB화 — 감사·클레임 즉시 대응</span></li>
+          <li><b>강재 견적서 자동 작성</b><span>규격·수량·시세 반영 단가 계산</span></li>
+          <li><b>입출고·중량 재고 대장 자동화</b><span>수기 대장 → 실시간 갱신·조회</span></li>
+        </ul>
+        <div class="foot">유통 상사 · 스틸서비스센터 · 강관/판재 가공<br>
+          <span class="go">철강 유통 전용 페이지 →</span></div>
+      </a>
+      <div class="ind">
+        <div class="top">
+          <span class="sec-tag">TRADE</span>
+          <h3>수출입 · 무역</h3>
+          <p class="pain">수출입 한 건에 서류 <b>60여 종</b>, 서류 간 중복 정보가
+          80%*인데 아직 손으로 옮겨 적고 있다면.</p>
+        </div>
+        <ul>
+          <li><b>선적서류 자동 작성</b><span>Invoice·Packing List·B/L 초안 — 중복 정보 자동 채움</span></li>
+          <li><b>HS코드 분류·FTA 원산지 보조</b><span>품목 설명 → 코드 추천과 판정 자료 정리</span></li>
+          <li><b>통관 서류 정리·관세사 전달</b><span>추출 → 양식 채움 → 전달까지 무인화</span></li>
+          <li><b>해외 바이어·시장 리서치 자동화</b><span>무역 데이터 기반 정기 리포트</span></li>
+        </ul>
+        <div class="foot">수출입 상사 · 포워딩 화주 · 해외소싱 기업 — *출처: 한국무역협회</div>
+      </div>
+      <div class="ind">
+        <div class="top">
+          <span class="sec-tag">MANUFACTURING</span>
+          <h3>중소 제조</h3>
+          <p class="pain">견적 내고, 발주 넣고, 검수하고, 보고하는 —
+          생산 바깥의 <b>서류 공정</b>이 사람을 잡아먹는 곳.</p>
+        </div>
+        <ul>
+          <li><b>견적서 자동 산출</b><span>도면·사양 → BOM·원가 계산 → 견적서 생성</span></li>
+          <li><b>발주서 자동 생성·발송</b><span>소요량 계산 → 협력사별 발주 자동화</span></li>
+          <li><b>수입검사·성적서 대조 자동화</b><span>원자재 물성과 규격 자동 대조, 불량 플래그</span></li>
+          <li><b>생산·품질 보고서 자동 작성</b><span>실적·불량 데이터 → 일일/주간 보고 자동화</span></li>
+        </ul>
+        <div class="foot">사출 · 금형 · 부품가공 — AI 바우처 등 정부 지원 연계 안내</div>
+      </div>
+    </div>
+    <p class="ind-note">
+      ※ 여기에 없는 산업도 방식은 같습니다 — 현장의 반복 공정을 3일간 진단하고, 자동화 목표 수치를 합의한 뒤 시작합니다.
+      병원 행정, 물류, 건설, 프랜차이즈 등 <a href="contact.html" style="color:var(--brand-strong);font-weight:800">귀사 업의 비효율을 그대로 말씀해 주세요.</a>
+    </p>
+  </div>
+</section>
+
+<!-- ================= 구축 구현물 ================= -->
+<section class="tight" style="padding-top:0">
+  <div class="wrap">
+    <div class="preview-band reveal">
+      <div class="txt">
+        <span class="k">BUILD PREVIEW · 구축 구현물</span>
+        <h3>말이 아니라 화면으로 —<br>운영 콘솔을 직접 조작해 보세요</h3>
+        <p>
+          발주 메일 수신 → AI 추출·검증 → ERP 기록까지 <b>사람 없이 흐르는 파이프라인</b>과,
+          확신도가 낮은 건만 사람에게 오는 <b>검수함</b>, ERP 연동 상태 · 처리량 · 정확도 리포트,
+          전 건이 남는 <b>감사 로그</b>까지 — 화면별로 직접 들어가 보실 수 있습니다.
+        </p>
+        <div style="margin-top:26px">
+          <a class="btn lime" href="../demos/demo4_구축_운영콘솔.html">운영 콘솔 열어보기 <span class="arr">→</span></a>
+        </div>
+      </div>
+      <div class="shot">
+        <a href="../demos/demo4_구축_운영콘솔.html">
+          <img src="assets/demo4_운영콘솔_미리보기.png" alt="자동처리 파이프라인 운영 콘솔 화면" loading="lazy">
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 기반 모듈 ================= -->
+<section class="sec-soft" id="systems">
+  <div class="wrap">
+    <div class="eyebrow">기반 시스템 3종</div>
+    <h2 class="title">어떤 산업이든, 세 가지 <span class="accent">기반 모듈</span>의 조합입니다</h2>
+    <p class="title-desc">
+      밀시트 검수도, 선적서류 작성도 결국 아래 세 시스템의 조합으로 만들어집니다.
+      검증된 기반 위에 귀사 공정을 얹기 때문에 빠르고, 저비용이고, 안정적입니다.
+    </p>
+
+    <div class="sys reveal">
+      <div class="info">
+        <div class="kind">MODULE 01 — 문서 처리 파이프라인</div>
+        <h3>읽고, 옮겨 적는 모든 일을 무인화</h3>
+        <p class="desc">
+          성적서 · 발주서 · 선적서류 · 세금계산서 — 형식이 제각각인 문서를 수신 즉시
+          추출·검증해 시스템에 기록합니다. 산업 특화 자동화의 심장입니다.
+        </p>
+        <span class="for">문서가 하루 수십 건 · 수기 입력 오류로 고생하는 곳</span>
+        <div class="depth">
+          <b>시스템이기에 가능한 것</b>
+          <ul>
+            <li>메일함·폴더 상시 감시 — 사람이 붙여넣을 필요 없음</li>
+            <li>확신도 기반 분기: 애매한 건만 사람이 검수</li>
+            <li>ERP·그룹웨어 API 직접 기록과 전 건 감사 로그</li>
+          </ul>
+        </div>
+      </div>
+      <div class="diagram">
+        <div class="d-title">PIPELINE</div>
+        <div class="d-node"><span class="lbl">수신 채널</span><span class="det">메일 · 스캔 OCR · 웹폼</span></div>
+        <div class="d-arrow">↓ 수신 즉시</div>
+        <div class="d-node ai"><span class="lbl">AI 추출 · 검증</span><span class="det">항목 구조화 · 규격 대조</span></div>
+        <div class="d-arrow">↓ 확실 건 / 불확실 건 분기</div>
+        <div class="d-node"><span class="lbl">시스템 기록</span><span class="det">불확실 건은 검수함으로</span></div>
+        <div class="d-arrow">↓</div>
+        <div class="d-node"><span class="lbl">담당자 알림 · 감사 로그</span><span class="det">처리 내역 전체 보존</span></div>
+      </div>
+    </div>
+
+    <div class="sys reveal">
+      <div class="diagram">
+        <div class="d-title">PIPELINE</div>
+        <div class="d-node"><span class="lbl">사내 문서 저장소</span><span class="det">그룹웨어 · 공유폴더 · 위키</span></div>
+        <div class="d-arrow">↓ 자동 동기화</div>
+        <div class="d-node"><span class="lbl">문서 처리 계층</span><span class="det">분할 · 색인 · 권한 태깅</span></div>
+        <div class="d-arrow">↓</div>
+        <div class="d-node ai"><span class="lbl">AI 답변 엔진</span><span class="det">근거 검색 → 출처 인용 답변</span></div>
+        <div class="d-arrow">↓ 권한 필터</div>
+        <div class="d-node"><span class="lbl">임직원 채널</span><span class="det">웹 · 사내 메신저</span></div>
+      </div>
+      <div class="info">
+        <div class="kind">MODULE 02 — 사내 지식 시스템</div>
+        <h3>회사가 아는 것을, 누구나 물어볼 수 있게</h3>
+        <p class="desc">
+          규정 · 매뉴얼 · 계약서 · 기술 문서가 흩어져 있어 담당자에게 물어봐야만 답이 나오는
+          회사를 위한 시스템입니다. 문서 근거와 출처를 함께 제시하므로 "AI가 지어낸 답"과 구분됩니다.
+        </p>
+        <span class="for">규정 문의가 특정 부서에 몰리는 곳 · 매뉴얼이 방대한 제조/프랜차이즈</span>
+        <div class="depth">
+          <b>시스템이기에 가능한 것</b>
+          <ul>
+            <li>수천 건 문서 자동 수집·갱신</li>
+            <li>부서·직급별 접근 권한 — 볼 수 없는 문서는 답변에서도 제외</li>
+            <li>답변마다 원문 조항 링크 — 감사 대응 가능한 출처 추적</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="sys reveal">
+      <div class="info">
+        <div class="kind">MODULE 03 — AI 에이전트</div>
+        <h3>여러 단계의 업무를, 통째로 맡기기</h3>
+        <p class="desc">
+          "경쟁사 동향 조사해서 주간 리포트로", "바이어 후보 수집해서 접촉 리스트로" —
+          검색하고, 판단하고, 문서를 만들고, 기록하는 여러 단계를 하나의 에이전트가
+          이어서 수행합니다. 가장 깊은 단계의 구축입니다.
+        </p>
+        <span class="for">리서치·모니터링이 정기적인 곳 · 고객 응대 초안이 많은 곳</span>
+        <div class="depth">
+          <b>시스템이기에 가능한 것</b>
+          <ul>
+            <li>다단계 작업 계획과 도구 사용 (검색 · 사내 DB · 문서 생성)</li>
+            <li>사람 승인 게이트 — 외부 발송 전 반드시 검토</li>
+            <li>정기 실행 스케줄과 실패 시 대체 경로</li>
+          </ul>
+        </div>
+      </div>
+      <div class="diagram">
+        <div class="d-title">AGENT LOOP</div>
+        <div class="d-node"><span class="lbl">트리거</span><span class="det">일정 · 이벤트 · 요청</span></div>
+        <div class="d-arrow">↓</div>
+        <div class="d-node ai"><span class="lbl">계획 수립</span><span class="det">작업을 단계로 분해</span></div>
+        <div class="d-arrow">↓ 반복</div>
+        <div class="d-node ai"><span class="lbl">도구 실행</span><span class="det">검색 · 사내 데이터 · 문서 생성</span></div>
+        <div class="d-arrow">↓</div>
+        <div class="d-node"><span class="lbl">사람 승인 게이트</span><span class="det">검토 후 발송 · 기록</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 진행 단계 ================= -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow">진행 단계</div>
+    <h2 class="title">작게 검증하고 <span class="accent">확실해진 것만</span> 넓힙니다</h2>
+    <p class="title-desc">
+      처음부터 큰 시스템을 계약하자고 하지 않습니다. 효과가 수치로 검증된 다음에
+      확대하는 것이 고객에게도, 저희에게도 안전한 길입니다. 제조·수출 기업은
+      정부 AI 바우처 등 지원사업 연계도 함께 안내드립니다.
+    </p>
+    <div class="build-steps stagger">
+      <div class="bs"><span class="n">1</span><b>현장 진단</b><p>대상 공정의 처리 방식·건수·소요 시간을 측정하고 자동화 목표 수치를 함께 정합니다.</p></div>
+      <div class="bs"><span class="n">2</span><b>시범 구축</b><p>합의된 범위를 짧은 주기로 먼저 구축해, 귀사의 실제 데이터로 정확도와 절감 효과를 검증합니다.</p></div>
+      <div class="bs"><span class="n">3</span><b>본 구축</b><p>검증된 것만 전체 공정·부서로 확대합니다. 시스템 연동과 권한 체계가 이 단계에 들어갑니다.</p></div>
+      <div class="bs"><span class="n">4</span><b>운영 · 개선</b><p>모델 업데이트, 정확도 모니터링, 사용률 리포트 — 시스템이 계속 좋아지도록 관리합니다.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 설계 원칙 ================= -->
+<section class="sec-soft">
+  <div class="wrap">
+    <div class="eyebrow">설계 원칙</div>
+    <h2 class="title">오래 쓰는 시스템의 네 가지 조건</h2>
+    <div class="tech-grid stagger">
+      <div class="tech-card"><b>특정 AI 모델에 종속되지 않습니다</b><p>모델 교체가 가능한 구조로 설계합니다. 더 좋고 경제적인 모델이 나오면 시스템 수정 없이 갈아끼웁니다 — AI가 빠르게 발전하는 시대의 가장 중요한 보험입니다.</p></div>
+      <div class="tech-card"><b>사람 검수 지점을 설계에 넣습니다</b><p>AI가 100% 확신할 수 없는 건은 사람의 검수함으로 보냅니다. "전부 자동"보다 "확실한 것만 자동"이 실무에서 오래 살아남습니다.</p></div>
+      <div class="tech-card"><b>모든 처리에 감사 로그를 남깁니다</b><p>언제 무엇이 입력되어 어떤 근거로 처리됐는지 전부 기록됩니다. 추적할 수 없는 시스템은 회사 시스템이 아닙니다.</p></div>
+      <div class="tech-card"><b>귀사 인력이 이어받을 수 있게 만듭니다</b><p>문서화된 구조와 관리 화면을 남기고, 원하시면 담당자 인수인계 교육까지 진행합니다 — 업체에 영원히 묶이는 구축은 하지 않습니다.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="wrap">
+    <h2>귀사 업의 <em>가장 번거로운 공정</em> 하나만<br>말씀해 주세요</h2>
+    <p>자동화가 가능한지, 어느 깊이로 가능한지, 정부 지원 연계가 되는지 —
+    진단 미팅에서 한 번에 판단해 드립니다.</p>
+    <a class="btn lime" href="contact.html">구축 상담 신청하기</a>
+  </div>
+</section>
+
+<script src="assets/site.js"></script>
+</body>
+</html>

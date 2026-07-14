@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>발주 메일 자동 입력 · CoreNine AI</title>
+<style>
+  :root{
+    --bg:#F7F8FB; --card:#ffffff; --text:#1A1F2E; --point:#3B5BFF;
+    --sub:#6B7280; --success:#0BA678; --line:#E6E8EF; --warn-bg:#FFF6D6;
+    --warn-line:#F2C94C; --shadow:0 1px 3px rgba(20,30,60,.06),0 8px 24px rgba(20,30,60,.05);
+    --radius:12px;
+  }
+  [data-theme="dark"]{
+    --bg:#0E1117; --card:#171B24; --text:#E8EAF0; --point:#6C8BFF;
+    --sub:#9AA3B2; --success:#2FD39E; --line:#262B36; --warn-bg:#3A3417;
+    --warn-line:#B99414; --shadow:0 1px 3px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI","Malgun Gothic",sans-serif;
+    line-height:1.55; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+
+  /* Header */
+  header{
+    position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 82%,transparent);
+    backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);
+  }
+  .hd{display:flex;align-items:center;justify-content:space-between;height:62px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{font-weight:800;font-size:20px;letter-spacing:-.5px}
+  .logo .x{color:var(--point)}
+  .tag{font-size:12.5px;color:var(--sub);padding-left:12px;border-left:1px solid var(--line)}
+  .toggle{
+    display:inline-flex;align-items:center;gap:7px;cursor:pointer;user-select:none;
+    border:1px solid var(--line);background:var(--card);color:var(--text);
+    padding:7px 12px;border-radius:20px;font-size:13px;font-weight:600;
+  }
+  .toggle:hover{border-color:var(--point)}
+
+  /* Hero */
+  .hero{padding:26px 0 8px}
+  .hero h1{font-size:23px;margin:0 0 6px;letter-spacing:-.6px}
+  .hero p{margin:0;color:var(--sub);font-size:14px}
+
+  /* Mode bar */
+  .modebar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:16px 0 6px}
+  .seg{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:3px}
+  .seg button{
+    border:0;background:transparent;color:var(--sub);font-weight:600;font-size:13px;
+    padding:7px 14px;border-radius:8px;cursor:pointer;font-family:inherit;
+  }
+  .seg button.on{background:var(--point);color:#fff}
+  .modehint{font-size:12.5px;color:var(--sub)}
+  .apikey{display:none;align-items:center;gap:8px;flex-wrap:wrap}
+  .apikey.show{display:flex}
+  .apikey input{
+    border:1px solid var(--line);background:var(--card);color:var(--text);
+    border-radius:8px;padding:8px 11px;font-size:13px;width:280px;font-family:inherit;
+  }
+  .apikey input:focus{outline:none;border-color:var(--point)}
+  .apikey .savebtn{
+    border:1px solid var(--line);background:var(--card);color:var(--text);
+    border-radius:8px;padding:8px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;
+  }
+  .apikey .ok{color:var(--success);font-size:12.5px;font-weight:600}
+
+  /* Grid */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:18px 0 10px}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 18px 12px}
+  .card-h h2{font-size:15px;margin:0;letter-spacing:-.3px}
+  .card-h .mini{font-size:12px;color:var(--sub)}
+  .card-b{padding:0 18px 18px}
+
+  .samples{display:flex;flex-wrap:wrap;gap:8px;padding:0 18px 12px}
+  .chip{
+    border:1px solid var(--line);background:transparent;color:var(--text);
+    border-radius:20px;padding:7px 13px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;
+    transition:.12s;
+  }
+  .chip:hover{border-color:var(--point);color:var(--point)}
+  .chip.active{background:var(--point);color:#fff;border-color:var(--point)}
+
+  textarea{
+    width:100%;min-height:340px;resize:vertical;border:1px solid var(--line);
+    background:var(--bg);color:var(--text);border-radius:10px;padding:14px;
+    font-family:inherit;font-size:13.5px;line-height:1.6;
+  }
+  textarea:focus{outline:none;border-color:var(--point)}
+
+  .run{
+    margin-top:12px;width:100%;border:0;background:var(--point);color:#fff;
+    font-weight:700;font-size:15px;padding:14px;border-radius:10px;cursor:pointer;font-family:inherit;
+    display:flex;align-items:center;justify-content:center;gap:9px;transition:.15s;
+  }
+  .run:hover{filter:brightness(1.05)}
+  .run:disabled{opacity:.65;cursor:default}
+  .spin{width:16px;height:16px;border:2.4px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:none}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .run.loading .spin{display:inline-block}
+
+  /* Result */
+  .result-empty{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;color:var(--sub);min-height:340px;gap:10px;padding:20px;
+  }
+  .result-empty .ico{font-size:34px;opacity:.55}
+  .result-empty .t{font-size:14px;font-weight:600;color:var(--text)}
+  .result-empty .s{font-size:12.5px}
+
+  .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+  table{border-collapse:collapse;width:100%;font-size:12.7px;min-width:720px}
+  thead th{
+    background:var(--bg);color:var(--sub);font-weight:700;text-align:left;
+    padding:10px 11px;border-bottom:1px solid var(--line);white-space:nowrap;position:sticky;top:0;
+  }
+  tbody td{padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+  tbody tr:last-child td{border-bottom:0}
+  tbody td[contenteditable]{cursor:text;border-radius:4px}
+  tbody td[contenteditable]:focus{outline:2px solid var(--point);outline-offset:-2px;background:var(--bg)}
+  td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .cell-warn{background:var(--warn-bg)}
+  .badge{
+    display:inline-block;margin-top:4px;font-size:10.5px;font-weight:700;color:#8a6d00;
+    background:var(--warn-line);border-radius:20px;padding:2px 8px;white-space:nowrap;
+  }
+  [data-theme="dark"] .badge{color:#1A1F2E}
+  .row-in{opacity:0;transform:translateY(8px)}
+  .row-in.show{opacity:1;transform:none;transition:.32s cubic-bezier(.2,.7,.3,1)}
+
+  .sumbar{
+    display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+    margin-top:14px;padding:13px 15px;background:var(--bg);border:1px solid var(--line);border-radius:10px;
+  }
+  .sumbar .lbl{font-size:12.5px;color:var(--sub);font-weight:600}
+  .sumbar .val{font-size:20px;font-weight:800;letter-spacing:-.5px}
+  .sumbar .val small{font-size:13px;font-weight:600;color:var(--sub)}
+
+  .actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}
+  .btn{
+    border:1px solid var(--line);background:var(--card);color:var(--text);
+    border-radius:9px;padding:10px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;
+    display:inline-flex;align-items:center;gap:7px;transition:.12s;
+  }
+  .btn:hover{border-color:var(--point);color:var(--point)}
+  .btn.primary{background:var(--success);border-color:var(--success);color:#fff}
+  .btn.primary:hover{filter:brightness(1.05);color:#fff}
+
+  .effect{margin-top:14px;text-align:right;font-size:12px;color:var(--sub)}
+  .effect b{color:var(--success);font-weight:800}
+
+  .toast{
+    position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);
+    background:var(--text);color:var(--bg);padding:11px 18px;border-radius:10px;font-size:13px;font-weight:600;
+    opacity:0;pointer-events:none;transition:.25s;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.25);
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  .warn-note{
+    display:none;margin-top:10px;font-size:12.5px;color:#8a6d00;background:var(--warn-bg);
+    border:1px solid var(--warn-line);border-radius:9px;padding:10px 13px;line-height:1.5;
+  }
+  [data-theme="dark"] .warn-note{color:#E8D89A}
+  .warn-note.show{display:block}
+
+  footer{border-top:1px solid var(--line);margin-top:34px;padding:20px 0 40px}
+  footer .f{font-size:12px;color:var(--sub);text-align:center}
+</style>
+<style>body,body *{word-break:keep-all;overflow-wrap:break-word}</style></head>
+<body>
+<header>
+  <div class="wrap hd">
+    <div class="brand">
+      <span class="logo">CoreNine <span class="x">AI</span></span>
+      <span class="tag">AI 업무 자동화 데모</span>
+    </div>
+    <button class="toggle" id="themeToggle" aria-label="다크 모드 전환">
+      <span id="themeIco">🌙</span><span id="themeTxt">다크 모드</span>
+    </button>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>발주 메일, AI가 읽고 표로 자동 정리</h1>
+    <p>거래처가 보내온 발주서·견적요청 메일을 붙여넣으면 품목·수량·단가·납기를 자동 추출합니다. 엑셀·ERP로 바로 넘길 수 있습니다.</p>
+  </section>
+
+  <div class="modebar">
+    <div class="seg" role="tablist">
+      <button id="modeSim" class="on" onclick="setMode('sim')">시뮬레이션 모드</button>
+      <button id="modeLive" onclick="setMode('live')">라이브 모드</button>
+    </div>
+    <span class="modehint" id="modeHint">샘플 메일 3개로 추출 과정을 시연합니다.</span>
+    <div class="apikey" id="apiRow">
+      <input type="password" id="apiKey" placeholder="Anthropic API 키 (sk-ant-...)" autocomplete="off">
+      <button class="savebtn" onclick="saveKey()">저장</button>
+      <span class="ok" id="keyOk" style="display:none">✓ 저장됨</span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- LEFT: 받은 메일 -->
+    <section class="card">
+      <div class="card-h">
+        <h2>📨 받은 메일</h2>
+        <span class="mini">샘플을 불러오거나 직접 붙여넣기</span>
+      </div>
+      <div class="samples">
+        <button class="chip" data-s="1" onclick="loadSample(1)">샘플1 · 정식 발주</button>
+        <button class="chip" data-s="2" onclick="loadSample(2)">샘플2 · 급한 추가 발주</button>
+        <button class="chip" data-s="3" onclick="loadSample(3)">샘플3 · 견적 요청</button>
+      </div>
+      <div class="card-b">
+        <textarea id="mail" placeholder="여기에 발주/견적 메일을 붙여넣으세요. 또는 위 샘플 버튼을 눌러보세요."></textarea>
+        <button class="run" id="runBtn" onclick="extract()">
+          <span class="spin"></span><span id="runTxt">AI로 추출하기</span>
+        </button>
+        <div class="warn-note" id="warnNote"></div>
+      </div>
+    </section>
+
+    <!-- RIGHT: 추출 결과 -->
+    <section class="card">
+      <div class="card-h">
+        <h2>📊 추출 결과</h2>
+        <span class="mini" id="resMeta"></span>
+      </div>
+      <div class="card-b">
+        <div id="resultEmpty" class="result-empty">
+          <div class="ico">🗂️</div>
+          <div class="t">아직 추출된 항목이 없습니다</div>
+          <div class="s">왼쪽에서 메일을 불러오고 <b>AI로 추출하기</b>를 눌러보세요.</div>
+        </div>
+
+        <div id="resultBox" style="display:none">
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>발주처</th><th>품목명</th><th>규격</th>
+                  <th style="text-align:right">수량</th><th style="text-align:right">단가</th>
+                  <th style="text-align:right">금액</th><th>납기일</th><th>비고</th>
+                </tr>
+              </thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+
+          <div class="sumbar">
+            <span class="lbl">합계 금액 (수량 × 단가)</span>
+            <span class="val" id="sumVal">₩0</span>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" onclick="downloadCSV()">⬇ CSV 다운로드</button>
+            <button class="btn" onclick="copyERP()">📋 ERP 입력 형식 복사</button>
+            <button class="btn" onclick="recalc()">↻ 금액 재계산</button>
+          </div>
+
+          <div class="effect">메일 1건 수기 입력 평균 <b>4분</b> → <b>8초</b></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap f">본 데모는 시연용 샘플 데이터로 동작합니다 · CoreNine AI</div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- Theme ---------- */
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  document.getElementById('themeIco').textContent = t==='dark'?'☀️':'🌙';
+  document.getElementById('themeTxt').textContent = t==='dark'?'라이트 모드':'다크 모드';
+  try{localStorage.setItem('ax_theme',t)}catch(e){}
+}
+document.getElementById('themeToggle').onclick=()=>{
+  const cur=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+  setTheme(cur);
+};
+(function(){try{setTheme(localStorage.getItem('ax_theme')||'light')}catch(e){setTheme('light')}})();
+
+/* ---------- Sample mails ---------- */
+const SAMPLES = {
+1:`보내는사람: 김성호 <purchase@daehanmetal.co.kr>
+받는사람: 영업팀
+제목: [대한금속] 7월 정기 발주 건
+
+안녕하세요, 대한금속 구매팀 김성호 과장입니다.
+지난달 납품 건 잘 받았습니다. 이번 달 정기 발주 넣습니다.
+
+아래 품목으로 진행 부탁드립니다.
+- 스테인리스 볼트 M8 x 30mm, 육각 / 2,000개 / 개당 180원
+- 평와셔 M8 (STS304) 1,500개, 단가는 지난번과 동일하게 45원으로 해주세요
+- 스프링와셔 M8 도 800개 넣어주세요 (개당 60원)
+
+납기는 7월 25일까지 부탁드리고, 납품 장소는 지난번과 동일하게
+경기도 안산시 단원구 성곡동 대한금속 2공장 자재창고로 부탁드립니다.
+
+세금계산서는 월말 발행이고, 궁금한 점 있으면 010-3345-7788로 연락 주세요.
+감사합니다.`,
+
+2:`보내는사람: 박미영 <mypark@hansungtrade.kr>
+받는사람: 영업팀
+제목: RE: 지난주 납품 건 관련 추가요청
+
+대표님 안녕하세요~ 한성상사 박미영입니다.
+
+바쁘신데 죄송한데 급해서요! 지난번에 받은 그 의자
+(사무용 회전의자요) 그거 50개만 더 보내주실 수 있을까요?
+이번엔 색상을 검정색으로 부탁드려요. 나머지 사양은 지난번이랑 똑같이요.
+
+그리고 지난번 견적서에 있던 거 단가 그대로 해주시면 감사하겠습니다.
+납기는 최대한 빨리요ㅠㅠ 늦어도 이번 주 금요일까지는 꼭 받아야 해서요.
+
+------ 원본 메일 ------
+> 제목: [한성상사] 사무용 의자 발주
+> 사무용 회전의자 (모델 HS-200, 그레이) 30개
+> 단가 89,000원, 납기 6/28
+> 납품지: 서울 강서구 마곡동 한성상사 본사
+
+부탁드려요! 확인되면 문자 한 통 주세요~`,
+
+3:`보내는사람: 이준혁 <jh.lee@woojin-ind.com>
+받는사람: 영업팀
+제목: 우진산업 - 견적 요청드립니다
+
+담당자님 안녕하세요.
+우진산업 생산관리팀 이준혁 대리입니다.
+
+신규 라인 증설 관련하여 아래 품목 견적을 요청드립니다.
+정식 발주 전 단가 확인 목적입니다.
+
+1) 산업용 컨베이어 벨트 (폭 600mm, PVC 재질) - 30~50m 사이로 검토 중
+2) 벨트 롤러 (지름 89mm, 스틸) - 40~60개
+
+희망 납기는 8월 중순경이며, 물량은 견적 단가 보고 확정하겠습니다.
+가능하시면 이번 주 중으로 회신 부탁드립니다. 감사합니다.
+
+우진산업 이준혁 / 031-786-2200`
+};
+
+/* ---------- State ---------- */
+let mode='sim';
+let activeSample=null;
+let curRows=[];
+
+/* ---------- Mode ---------- */
+function setMode(m){
+  mode=m;
+  document.getElementById('modeSim').classList.toggle('on',m==='sim');
+  document.getElementById('modeLive').classList.toggle('on',m==='live');
+  document.getElementById('apiRow').classList.toggle('show',m==='live');
+  document.getElementById('modeHint').textContent = m==='sim'
+    ? '샘플 메일 3개로 추출 과정을 시연합니다.'
+    : 'API 키를 입력하면 어떤 메일이든 실제 AI가 추출합니다.';
+  if(m==='live'){
+    try{const k=localStorage.getItem('ax_apikey');if(k){document.getElementById('apiKey').value=k;document.getElementById('keyOk').style.display='inline'}}catch(e){}
+  }
+}
+function saveKey(){
+  const k=document.getElementById('apiKey').value.trim();
+  try{localStorage.setItem('ax_apikey',k)}catch(e){}
+  document.getElementById('keyOk').style.display = k?'inline':'none';
+  toast(k?'API 키 저장됨':'API 키 삭제됨');
+}
+
+/* ---------- Load sample ---------- */
+function loadSample(n){
+  activeSample=n;
+  document.getElementById('mail').value=SAMPLES[n];
+  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.s==String(n)));
+  document.getElementById('warnNote').classList.remove('show');
+}
+document.getElementById('mail').addEventListener('input',()=>{
+  activeSample=null;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+});
+
+/* ---------- 시뮬레이션: 입력 메일을 실제로 파싱하는 규칙 엔진 ----------
+   샘플이든 직접 붙여넣은 메일이든, 지금 텍스트박스에 있는 내용을 그대로 분석한다.
+   (수량·단가·품목명을 바꾸면 결과도 바뀐다) */
+function pad2(n){return String(n).padStart(2,'0')}
+function fmtDate(y,m,d){return y+'-'+pad2(m)+'-'+pad2(d)}
+function nextWeekday(ko){ // '금' → 다가오는 해당 요일
+  const map={'일':0,'월':1,'화':2,'수':3,'목':4,'금':5,'토':6};
+  const t=new Date(); let diff=(map[ko]-t.getDay()+7)%7; if(diff===0)diff=7;
+  const d=new Date(t.getTime()+diff*86400000);
+  return fmtDate(d.getFullYear(),d.getMonth()+1,d.getDate());
+}
+const UNIT_RE='(개|EA|ea|본|박스|BOX|세트|SET|장|롤|권|매|kg|KG|m|M)';
+
+function simParse(text){
+  const year=new Date().getFullYear();
+  const g={buyer:null,due:null,dueWarn:null,place:null};
+
+  // 발주처: [브래킷] > 회사접미어 패턴
+  let m=text.match(/\[([^\]\n]{2,20})\]/);
+  if(m) g.buyer=m[1].trim();
+  if(!g.buyer){
+    m=text.match(/([가-힣A-Za-z0-9]{2,10}(?:금속|상사|산업|스틸|테크|기공|정공|물산|무역|트레이드|기업|정밀|전자))/);
+    if(m) g.buyer=m[1];
+  }
+  g.buyer=g.buyer||'(발주처 미확인)';
+
+  // 납기 (인용부 '>' 제외한 본문에서 우선 탐색)
+  const mainText=text.split(/\n/).filter(l=>!/^\s*>/.test(l)).join('\n');
+  if(m=mainText.match(/납기[^\n0-9]{0,14}(\d{1,2})\s*월\s*(\d{1,2})\s*일?/)) g.due=fmtDate(year,+m[1],+m[2]);
+  else if(m=mainText.match(/납기[^\n0-9]{0,14}(\d{1,2})\s*\/\s*(\d{1,2})/)) g.due=fmtDate(year,+m[1],+m[2]);
+  else if(m=mainText.match(/(\d{1,2})월\s*(초|중순|말)/)){
+    const dd={'초':5,'중순':15,'말':25}[m[2]];
+    g.due=fmtDate(year,+m[1],dd); g.dueWarn='"'+m[0]+'" → '+g.due+'로 해석';
+  }
+  else if(m=mainText.match(/(?:이번\s*주|금주|늦어도[^\n]{0,10})\s*(월|화|수|목|금)요일/)){
+    g.due=nextWeekday(m[1]); g.dueWarn='"'+m[0]+'" → '+g.due+'로 해석';
+  }
+
+  // 납품 장소 (다음 줄로 이어지는 주소까지 수용)
+  if(m=text.match(/납품\s*(?:장소|지)[는은:\s]*([^\n]+(?:\n[^\n>]+)?)/)){
+    g.place=m[1].replace(/지난번과\s*동일하게|부탁드립니다|입니다|해주세요/g,' ')
+      .replace(/[.,]\s*$/,'').replace(/\s+/g,' ').trim().replace(/(로|으로)$/,'');
+    if(!g.place) g.place=null;
+  }
+
+  // 라인 파싱 (인용부 '>' 는 원본 참고로 분리)
+  const rows=[], qrows=[];
+  text.split(/\n/).forEach(raw=>{
+    const quoted=/^\s*>/.test(raw);
+    let line=raw.replace(/^\s*>?\s*/,'').replace(/^[-•·*①②③④⑤]|^\d+[).]/,'').trim();
+    if(!line) return;
+    if(/^(제목|보내는사람|받는사람)/.test(line)) return;
+
+    // 수량 (범위는 중간값)
+    // 단위 뒤 조사("50개만", "800개도")는 허용, "개월"·"개소" 같은 복합어는 배제
+    const qm=line.match(new RegExp('([\\d,]+)\\s*(?:[~\\-]\\s*([\\d,]+)\\s*)?'+UNIT_RE+'(?!당|월|소|사|[A-Za-z0-9])'));
+    if(!qm) {
+      // 수량 없는 '단가/납기' 인용줄 → 직전 인용 품목에 단가 붙이기
+      if(quoted && qrows.length){
+        const pm=line.match(/단가\s*([\d,]+)\s*원/);
+        if(pm) qrows[qrows.length-1].price=+pm[1].replace(/,/g,'');
+      }
+      return;
+    }
+    const q1=+qm[1].replace(/,/g,''), q2=qm[2]?+qm[2].replace(/,/g,''):null;
+    const qty=q2?Math.round((q1+q2)/2):q1;
+    const unit=qm[3];
+    const warn={};
+    if(q2) warn.qty='수량 범위 '+q1+'~'+q2+unit+' → 중간값 '+qty+' 가정';
+
+    // 단가
+    let price=0;
+    let pm=line.match(/(?:개당|단가[는은]?[^\d\n]{0,12}|@)\s*([\d,]+)\s*원/);
+    if(!pm){ const after=line.slice(qm.index+qm[0].length); pm=after.match(/([\d,]+)\s*원/); }
+    if(pm) price=+pm[1].replace(/,/g,'');
+
+    // 규격: 괄호 내용(가격·수량성 문구 제외) + 치수 패턴
+    let spec=[];
+    let stripped=line.replace(/\(([^)]+)\)/g,(a,b)=>{
+      const v=b.trim();
+      if(!/원|개당|단가/.test(v)) spec.push(v);
+      return ' ';
+    });
+    const dim=stripped.match(/(M\d+\s*[xX×]\s*\d+\s*mm|M\d+|폭\s*\d+\s*mm|지름\s*\d+\s*mm|\d+\s*[xX×]\s*\d+\s*mm)/);
+    if(dim && !spec.join(' ').includes(dim[0].trim())) spec.push(dim[0].trim());
+
+    // 품목명: 수량 앞부분에서 괄호·치수·구분자 제거
+    let name=line.slice(0,qm.index)
+      .replace(/\([^)]*\)/g,' ')
+      .replace(/(?:M\d+(?:\s*[xX×]\s*\d+\s*mm)?|폭\s*\d+\s*mm|지름\s*\d+\s*mm)[^,/]*/g,' ')
+      .replace(/[\/,·]+/g,' ')
+      .replace(/(그거|그|저|요|만|도|를|을|은|는|이|가)\s*$/,'')
+      .replace(/\s+/g,' ').trim();
+    if(/^(그거|그|저것|저)$/.test(name)) name='';
+    name=name.replace(/(요|이요)$/,'').replace(/[-–—:]+$/,'').trim();
+    // 이름이 비고 괄호 내용이 품목명처럼 생겼으면(숫자 없음) 품목명으로 승격
+    if(!name && spec.length===1 && !/\d/.test(spec[0])){
+      name=spec[0].replace(/(요|이요)$/,'').trim(); spec=[];
+    }
+
+    const row={buyer:g.buyer,item:name,spec:spec.join(', '),qty,price,
+      due:g.due||'',note:'',warn};
+    if(quoted) qrows.push(row); else rows.push(row);
+  });
+
+  // "지난번 그거 N개 더" 패턴: 본문 품목명/단가가 비면 인용 원본에서 승계
+  rows.forEach(r=>{
+    if((!r.item||!r.price) && qrows.length){
+      const src=qrows.find(q=>q.item && (!r.item || q.item.includes(r.item) || r.item.includes(q.item))) || qrows[0];
+      if(!r.item && src.item){ r.item=src.item; r.warn.item='원본(인용) 메일의 품목으로 추론'; }
+      if(!r.spec && src.spec){ r.spec=src.spec; r.warn.spec='원본 메일 사양 승계'; }
+      if(!r.price && src.price){ r.price=src.price; r.warn.price='원본 견적 단가 '+src.price.toLocaleString('ko-KR')+'원 적용(명시 없음)'; }
+    }
+    // 색상 변경 요청 반영
+    const cm=text.match(/색상[을은]?\s*([가-힣]+?)(?:색)?\s*으로/);
+    if(cm && r.spec){ r.spec=r.spec.replace(/(그레이|검정|블랙|화이트|흰색)/, cm[1]+'색'); r.warn.spec=(r.warn.spec?r.warn.spec+' · ':'')+'색상 '+cm[1]+'(으)로 변경 요청 반영'; }
+  });
+
+  const isQuote=/견적\s*(요청|부탁|문의)/.test(text);
+  rows.forEach(r=>{
+    if(g.dueWarn) r.warn.due=g.dueWarn;
+    if(g.place && !r.note) r.note=g.place;
+    if(isQuote && !r.price){ r.warn.price='견적 단가 미정'; r.note=r.note||'견적 요청'; }
+    if(/단가[^\n]{0,10}(지난번|동일)/.test(text) && r.price && !r.warn.price) r.note=r.note||'단가 전월 동일(원문 언급)';
+    if(!Object.keys(r.warn).length) delete r.warn;
+  });
+  return {rows, meta:g.buyer+(isQuote?' · 견적 요청':' · 발주')};
+}
+
+/* ---------- Extract ---------- */
+function extract(){
+  const text=document.getElementById('mail').value.trim();
+  if(!text){toast('메일 내용을 먼저 입력하세요');return;}
+  const warn=document.getElementById('warnNote');
+  warn.classList.remove('show');
+
+  if(mode==='sim'){
+    const parsed=simParse(text);
+    if(!parsed.rows.length){
+      warn.innerHTML='메일에서 <b>수량이 있는 발주 항목</b>을 찾지 못했습니다. "품목명 100개 / 개당 1,000원" 같은 형태가 한 줄 이상 필요합니다.<br>비정형 문장까지 해석하는 결과는 <b>라이브 모드</b>(실제 AI 호출)에서 확인하실 수 있습니다.';
+      warn.classList.add('show');
+      return;
+    }
+    runLoading(()=>renderRows(parsed.rows, parsed.meta), 1000);
+  } else {
+    liveExtract(text);
+  }
+}
+
+function runLoading(done,ms){
+  const btn=document.getElementById('runBtn');
+  btn.classList.add('loading');btn.disabled=true;
+  document.getElementById('runTxt').textContent='분석 중...';
+  setTimeout(()=>{
+    btn.classList.remove('loading');btn.disabled=false;
+    document.getElementById('runTxt').textContent='AI로 추출하기';
+    done();
+  },ms);
+}
+
+/* ---------- Render ---------- */
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function won(n){return '₩'+Number(n||0).toLocaleString('ko-KR')}
+
+function renderRows(rows, meta){
+  curRows=rows.map(r=>Object.assign({},r));
+  document.getElementById('resultEmpty').style.display='none';
+  document.getElementById('resultBox').style.display='block';
+  document.getElementById('resMeta').textContent = meta ? meta+' · '+rows.length+'건' : rows.length+'건';
+
+  const tb=document.getElementById('tbody');
+  tb.innerHTML='';
+  rows.forEach((r,i)=>{
+    const w=r.warn||{};
+    const amt=(r.qty||0)*(r.price||0);
+    const tr=document.createElement('tr');
+    tr.className='row-in';
+    tr.innerHTML=cell(r.buyer,w.buyer)
+      +cell(r.item,w.item)
+      +cell(r.spec,w.spec)
+      +cellNum(r.qty,w.qty,true)
+      +cellNum(r.price?won(r.price):(w.price?'미정':'0'),w.price,false)
+      +'<td class="num" data-amt>'+ (r.price?won(amt):'—') +'</td>'
+      +cell(r.due,w.due)
+      +cell(r.note,null,true);
+    tb.appendChild(tr);
+    setTimeout(()=>tr.classList.add('show'), 90*i+60);
+  });
+  recalc();
+  document.getElementById('resultBox').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function cell(v,warn,noEdit){
+  const cls=warn?' class="cell-warn"':'';
+  const badge=warn?'<div class="badge" title="'+esc(warn)+'">⚠ 확인 필요</div>':'';
+  const ed=noEdit?'':' contenteditable="true"';
+  return '<td'+cls+ed+'>'+esc(v)+badge+'</td>';
+}
+function cellNum(v,warn){
+  const cls='class="num'+(warn?' cell-warn':'')+'"';
+  const badge=warn?'<div class="badge" title="'+esc(warn)+'">⚠ 확인 필요</div>':'';
+  return '<td '+cls+' contenteditable="true">'+esc(v)+badge+'</td>';
+}
+
+/* ---------- Recalc from editable cells ---------- */
+function parseNum(t){const n=String(t).replace(/[^0-9.-]/g,'');return n?Number(n):0}
+function recalc(){
+  const tb=document.getElementById('tbody');
+  let sum=0;
+  [...tb.rows].forEach(tr=>{
+    const qty=parseNum(tr.cells[3].textContent);
+    const priceTxt=tr.cells[4].textContent;
+    const price=parseNum(priceTxt);
+    const amtCell=tr.cells[5];
+    if(price>0){const a=qty*price;amtCell.textContent=won(a);sum+=a;}
+    else{amtCell.textContent='—';}
+  });
+  document.getElementById('sumVal').innerHTML = won(sum)+' <small>(견적 미정 항목 제외)</small>';
+}
+document.getElementById('tbody').addEventListener('input',recalc);
+
+/* ---------- Export ---------- */
+function tableData(){
+  const tb=document.getElementById('tbody');
+  return [...tb.rows].map(tr=>{
+    return [0,1,2,3,4,5,6,7].map(i=>{
+      const c=tr.cells[i].cloneNode(true);
+      c.querySelectorAll('.badge').forEach(b=>b.remove());
+      return c.textContent.trim();
+    });
+  });
+}
+const HEADERS=['발주처','품목명','규격','수량','단가','금액','납기일','비고'];
+function downloadCSV(){
+  if(!curRows.length){toast('먼저 추출을 실행하세요');return;}
+  const rows=[HEADERS,...tableData()];
+  const csv=rows.map(r=>r.map(f=>{
+    const s=String(f).replace(/"/g,'""');
+    return /[",\n]/.test(s)?'"'+s+'"':s;
+  }).join(',')).join('\r\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='발주추출_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();URL.revokeObjectURL(a.href);
+  toast('CSV 다운로드 완료 (엑셀 호환)');
+}
+function copyERP(){
+  if(!curRows.length){toast('먼저 추출을 실행하세요');return;}
+  const rows=[HEADERS,...tableData()];
+  const tsv=rows.map(r=>r.join('\t')).join('\n');
+  const doToast=()=>toast('ERP 입력 형식 복사됨 (탭 구분)');
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(tsv).then(doToast).catch(()=>fallbackCopy(tsv,doToast));
+  }else fallbackCopy(tsv,doToast);
+}
+function fallbackCopy(text,cb){
+  const ta=document.createElement('textarea');ta.value=text;
+  ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);
+  ta.select();try{document.execCommand('copy');cb()}catch(e){toast('복사 실패')}
+  document.body.removeChild(ta);
+}
+
+/* ---------- Toast ---------- */
+let toastT;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+/* ---------- Live mode: real Anthropic API ---------- */
+async function liveExtract(text){
+  const key=(document.getElementById('apiKey').value||'').trim();
+  if(!key){toast('라이브 모드: API 키를 입력하세요');return;}
+  const btn=document.getElementById('runBtn');
+  btn.classList.add('loading');btn.disabled=true;
+  document.getElementById('runTxt').textContent='AI 분석 중...';
+
+  const sys='당신은 한국 중소기업의 발주/견적 메일에서 주문 정보를 추출하는 어시스턴트입니다. '
+    +'반드시 JSON 배열만 출력하세요(설명 금지). 각 원소 스키마: '
+    +'{"buyer":거래처명, "item":품목명, "spec":규격, "qty":수량(정수, 범위면 중간값), '
+    +'"price":단가(숫자, 미정이면 0), "due":납기일(YYYY-MM-DD, 상대표현은 오늘 기준 해석), '
+    +'"note":비고, "warn":{필드명:추론근거}}. '
+    +'문맥/인용메일에서 추론한 불확실한 필드는 warn 객체에 해당 필드의 근거 문장을 넣으세요. 오늘 날짜는 '
+    +new Date().toISOString().slice(0,10)+'입니다.';
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'content-type':'application/json',
+        'x-api-key':key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-5',
+        max_tokens:2000,
+        system:sys,
+        messages:[{role:'user',content:'다음 메일에서 발주 정보를 JSON 배열로 추출하세요:\n\n'+text}]
+      })
+    });
+    if(!res.ok){
+      const t=await res.text();
+      throw new Error('API '+res.status+': '+t.slice(0,200));
+    }
+    const data=await res.json();
+    let out=(data.content&&data.content[0]&&data.content[0].text||'').trim();
+    const m=out.match(/\[[\s\S]*\]/);
+    if(m)out=m[0];
+    const rows=JSON.parse(out);
+    btn.classList.remove('loading');btn.disabled=false;
+    document.getElementById('runTxt').textContent='AI로 추출하기';
+    if(!Array.isArray(rows)||!rows.length){toast('추출된 항목이 없습니다');return;}
+    renderRows(rows,'라이브 · '+ (rows[0].buyer||'') );
+  }catch(err){
+    btn.classList.remove('loading');btn.disabled=false;
+    document.getElementById('runTxt').textContent='AI로 추출하기';
+    const warn=document.getElementById('warnNote');
+    warn.innerHTML='라이브 추출 실패: '+esc(err.message||err)+'<br>API 키와 네트워크를 확인하세요. (CORS가 막히면 브라우저 확장/프록시가 필요할 수 있습니다.)';
+    warn.classList.add('show');
+  }
+}
+</script>
+</body>
+</html>

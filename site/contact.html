@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>상담 문의 — CoreNine AI</title>
+<meta name="description" content="교육·자동화 구축 상담 문의. 진단 미팅에서 귀사 업무 하나를 직접 AI로 처리해 보여드립니다.">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .contact-grid{margin-top:48px;display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:start}
+
+  /* 폼 카드 */
+  .form-card{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-md);overflow:hidden}
+  .form-card .fc-head{padding:28px 34px 0}
+  .form-card h3{font-size:20px;font-weight:800}
+  .form-card p.sub{margin-top:6px;font-size:13.5px;color:var(--sub)}
+  .form-embed{margin-top:20px;min-height:520px;position:relative}
+  .form-embed iframe{width:100%;height:640px;border:none;display:block}
+  /* Tally 미연동 시 표시되는 대체 폼 */
+  .fallback{padding:6px 34px 34px}
+  .fallback label{display:block;margin-top:16px;font-size:13px;font-weight:800;color:var(--sub)}
+  .fallback input,.fallback select,.fallback textarea{width:100%;margin-top:7px;padding:13px 16px;
+    border:1.5px solid var(--line);border-radius:10px;font-family:var(--sans);font-size:14.5px;
+    background:var(--bg-soft);transition:border-color .15s}
+  .fallback input:focus,.fallback select:focus,.fallback textarea:focus{outline:none;border-color:var(--brand);background:#fff}
+  .fallback textarea{min-height:110px;resize:vertical}
+  .fallback button{width:100%;margin-top:22px}
+  .fallback .hint{margin-top:12px;font-size:12px;color:var(--mute);text-align:center}
+
+  /* 안내 사이드 */
+  .side-block{background:#fff;border:1px solid var(--line);border-radius:18px;padding:28px 30px;box-shadow:var(--shadow-sm)}
+  .side-block + .side-block{margin-top:18px}
+  .side-block h4{font-size:16.5px;font-weight:800}
+  .side-block ol{margin-top:14px;list-style:none;counter-reset:s}
+  .side-block ol li{counter-increment:s;position:relative;padding:8px 0 8px 40px;font-size:13.5px;color:var(--sub);line-height:1.7}
+  .side-block ol li b{color:var(--ink)}
+  .side-block ol li::before{content:counter(s);position:absolute;left:0;top:8px;width:26px;height:26px;
+    border-radius:8px;background:var(--brand-soft);color:var(--brand-strong);font-weight:800;font-size:12.5px;
+    display:flex;align-items:center;justify-content:center}
+  .side-block .direct{margin-top:12px;font-size:14px;line-height:2}
+  .side-block .direct b{display:inline-block;width:56px;color:var(--mute);font-size:12.5px}
+  .side-block .direct a{color:var(--brand-strong);font-weight:800;text-decoration:none}
+
+  @media (max-width:960px){
+    .contact-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body data-page="contact">
+
+<header class="page-hero">
+  <div class="wrap">
+    <div class="crumb"><a href="index.html">홈</a> / 상담 문의</div>
+    <h1>
+      1분이면 충분합니다.<br>
+      <span class="accent">회신은 하루 안에</span> 드립니다
+    </h1>
+    <p class="lede">
+      교육 도입, 자동화 구축, 아직 뭘 해야 할지 모르는 단계 — 어디서 시작하셔도 좋습니다.
+      대상 인원과 고민을 남겨주시면 <b>영업일 기준 24시간 안에</b> 담당자가 직접 회신드립니다.
+    </p>
+  </div>
+</header>
+
+<section style="padding-top:40px">
+  <div class="wrap">
+    <div class="contact-grid">
+      <!-- 문의 폼 -->
+      <div class="form-card reveal-l">
+        <div class="fc-head">
+          <h3>상담 신청</h3>
+          <p class="sub">평균 작성 시간 1분 — 아는 것만 적어주셔도 됩니다.</p>
+        </div>
+        <form class="fallback" id="contactForm">
+          <label for="fCompany">회사명</label>
+          <input id="fCompany" type="text" placeholder="주식회사 OO" required>
+          <label for="fName">성함 · 직함</label>
+          <input id="fName" type="text" placeholder="김민수 인사팀장" required>
+          <label for="fContact">이메일 또는 연락처</label>
+          <input id="fContact" type="text" placeholder="name@company.co.kr / 010-0000-0000" required>
+          <label for="fTopic">관심 분야</label>
+          <select id="fTopic">
+            <option>임직원 AI 교육</option>
+            <option>업무 자동화 구축</option>
+            <option>교육 + 구축 모두</option>
+            <option>아직 모르겠어요 — 진단부터</option>
+          </select>
+          <label for="fMsg">문의 내용 (선택)</label>
+          <textarea id="fMsg" placeholder="예) 사무직 30명 대상 교육을 검토 중입니다. 3월 중 진행 가능할까요?"></textarea>
+          <button class="btn primary" type="submit" id="submitBtn">상담 신청하기 <span class="arr">→</span></button>
+          <p class="hint">버튼을 누르면 바로 접수됩니다. 영업일 기준 24시간 안에 회신드립니다.</p>
+        </form>
+        <div class="fallback" id="doneMsg" style="display:none;text-align:center;padding-bottom:40px">
+          <div style="width:60px;height:60px;border-radius:50%;background:var(--brand-soft);color:var(--brand-strong);font-size:28px;display:flex;align-items:center;justify-content:center;margin:26px auto 18px">✓</div>
+          <h3 style="font-size:20px">접수되었습니다!</h3>
+          <p style="margin-top:10px;font-size:14px;color:var(--sub);line-height:1.8">
+            남겨주신 연락처로 영업일 기준 24시간 안에<br>담당자가 직접 회신드리겠습니다.
+          </p>
+          <a class="btn soft sm" style="margin-top:22px" href="cases.html">기다리는 동안 데모 둘러보기</a>
+        </div>
+      </div>
+
+      <!-- 안내 -->
+      <div class="reveal-r">
+        <div class="side-block">
+          <h4>신청 후 이렇게 진행됩니다</h4>
+          <ol>
+            <li><b>하루 안에 회신</b> — 담당자가 일정 조율 연락을 드립니다.</li>
+            <li><b>진단 미팅 (20분·무료)</b> — 귀사 업무 하나를 그 자리에서 AI로 처리해 보여드리고, 대상자 구성을 확인합니다.</li>
+            <li><b>제안서 전달</b> — 과정 편성안과 기준 견적, 고용보험 환급 적용 여부를 정리해 드립니다.</li>
+            <li><b>결정은 그다음에</b> — 검토 후 진행 여부를 편하게 알려주세요.</li>
+          </ol>
+        </div>
+        <div class="side-block">
+          <h4>바로 연락하시려면</h4>
+          <div class="direct">
+            <b>EMAIL</b> <a href="mailto:contact@corenineai.com">contact@corenineai.com</a><br>
+            <b>대표</b> 김효원 — 진단·설계·강의를 직접 진행합니다
+          </div>
+        </div>
+        <div class="side-block" style="background:var(--brand-softer);border-color:var(--brand-line)">
+          <h4>이것부터 보고 싶다면</h4>
+          <div class="direct" style="line-height:1.9;font-size:13.5px;color:var(--sub)">
+            결정 전에 눌러볼 수 있는 <a href="cases.html">체험 데모 3종</a>과
+            부서 회람용 <a href="insights.html">자동화 체크리스트</a>를 먼저 확인해 보세요.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="assets/site.js"></script>
+<script>
+  // FormSubmit(https://formsubmit.co) AJAX 접수 — 서버 없이 메일로 수신.
+  // 최초 1회 제출 시 수신 메일함으로 활성화 확인 메일이 온다 (Activate 클릭 필요).
+  // 도메인 메일 개통 후 아래 주소만 교체하면 된다.
+  const FORM_ENDPOINT = 'https://formsubmit.co/ajax/visionmakers101.official@gmail.com';
+
+  document.getElementById('contactForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const v = id => document.getElementById(id).value.trim();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = '접수 중...';
+    const course = new URLSearchParams(location.search).get('course');
+    try {
+      const res = await fetch(FORM_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          _subject: '[CoreNine AI] 상담 신청 — ' + v('fCompany'),
+          _template: 'table',
+          '회사명': v('fCompany'),
+          '성함/직함': v('fName'),
+          '연락처': v('fContact'),
+          '관심 분야': v('fTopic'),
+          '관심 과정': course || '-',
+          '문의 내용': v('fMsg') || '-',
+        }),
+      });
+      if (!res.ok) throw new Error('submit failed');
+      document.getElementById('contactForm').style.display = 'none';
+      document.getElementById('doneMsg').style.display = 'block';
+    } catch (err) {
+      btn.disabled = false;
+      btn.innerHTML = '상담 신청하기 <span class="arr">→</span>';
+      alert('접수 중 오류가 발생했습니다. contact@corenineai.com 로 직접 메일 주시면 빠르게 회신드리겠습니다.');
+    }
+  });
+</script>
+</body>
+</html>

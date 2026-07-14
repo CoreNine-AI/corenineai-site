@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>인사이트 · 자료실 — CoreNine AI</title>
+<meta name="description" content="부서별 AI 업무 자동화 체크리스트 등 기업 AX 실무 자료를 무료로 받아보세요.">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  /* 리드마그넷 게이트 */
+  .gate{margin-top:48px;display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:center}
+  .gate-preview{position:relative}
+  .gate-preview .paper{background:#fff;border:1px solid var(--line);border-radius:16px;
+    box-shadow:var(--shadow-lg);padding:34px 36px;transform:rotate(-1.2deg)}
+  .gate-preview .paper h4{font-size:19px;font-weight:800;line-height:1.5;letter-spacing:-.02em}
+  .gate-preview .paper .tagline{margin-top:6px;font-size:12px;color:var(--brand-strong);font-weight:800;letter-spacing:.08em}
+  .gate-preview .row{display:flex;gap:10px;align-items:center;margin-top:14px}
+  .gate-preview .bx{width:15px;height:15px;border:1.8px solid var(--mute);border-radius:4px;flex:none}
+  .gate-preview .ln{height:9px;border-radius:5px;background:var(--bg-soft);flex:1}
+  .gate-preview .ln.w60{flex:0 0 60%}
+  .gate-preview .pill{flex:none;font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:999px;
+    background:var(--brand-soft);color:var(--brand-strong)}
+  .gate-preview .pill.b{background:#EAF3FF;color:#1D6FD6}
+  .gate-preview .badge42{position:absolute;top:-18px;right:-10px;background:var(--brand);color:#fff;
+    border-radius:999px;width:84px;height:84px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-weight:800;box-shadow:0 12px 30px rgba(11,166,120,.4);transform:rotate(6deg);z-index:2}
+  .gate-preview .badge42 .n{font-size:26px;line-height:1}
+  .gate-preview .badge42 .t{font-size:10.5px;margin-top:3px}
+
+  .gate-form{background:#fff;border:1px solid var(--line);border-radius:20px;padding:38px 36px;box-shadow:var(--shadow-md)}
+  .gate-form h3{font-size:21px;font-weight:800;line-height:1.5}
+  .gate-form p.sub{margin-top:8px;font-size:13.5px;color:var(--sub);line-height:1.75}
+  .gate-form label{display:block;margin-top:18px;font-size:13px;font-weight:800;color:var(--sub)}
+  .gate-form input{width:100%;margin-top:7px;padding:13px 16px;border:1.5px solid var(--line);border-radius:10px;
+    font-family:var(--sans);font-size:14.5px;transition:border-color .15s;background:var(--bg-soft)}
+  .gate-form input:focus{outline:none;border-color:var(--brand);background:#fff}
+  .gate-form .agree{margin-top:16px;display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--mute);line-height:1.6}
+  .gate-form .agree input{width:auto;margin-top:3px}
+  .gate-form button{width:100%;margin-top:20px}
+  .gate-done{display:none;text-align:center;padding:30px 0 10px}
+  .gate-done .ok{width:56px;height:56px;border-radius:50%;background:var(--brand-soft);color:var(--brand-strong);
+    font-size:26px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+  .gate-done h4{font-size:19px;font-weight:800}
+  .gate-done p{margin-top:8px;font-size:13.5px;color:var(--sub)}
+
+  /* 예정 자료 */
+  .soon-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:44px}
+  .soon{border:1px dashed #C9D4E0;border-radius:18px;padding:30px 28px;background:var(--bg-soft)}
+  .soon .tag{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.08em;
+    color:var(--mute);background:#fff;border:1px solid var(--line);padding:5px 12px;border-radius:999px}
+  .soon h4{margin-top:14px;font-size:17px;font-weight:800;line-height:1.55}
+  .soon p{margin-top:8px;font-size:13.5px;color:var(--sub);line-height:1.75}
+
+  /* 통계 인용 섹션 */
+  .fact-list{margin-top:44px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .fact{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px 28px;box-shadow:var(--shadow-sm)}
+  .fact .v{font-size:26px;font-weight:800;color:var(--brand-strong);letter-spacing:-.02em}
+  .fact p{margin-top:8px;font-size:14px;color:var(--sub);line-height:1.75}
+  .fact .src{margin-top:10px;font-size:11.5px;color:var(--mute)}
+
+  @media (max-width:960px){
+    .gate{grid-template-columns:1fr}
+    .soon-grid{grid-template-columns:1fr}
+    .fact-list{grid-template-columns:1fr}
+    .gate-preview .badge42{right:6px}
+  }
+</style>
+</head>
+<body data-page="insights">
+
+<header class="page-hero">
+  <div class="wrap">
+    <div class="crumb"><a href="index.html">홈</a> / 인사이트 · 자료실</div>
+    <h1>
+      도입 검토에 바로 쓰는<br>
+      <span class="accent">실무 자료</span>를 무료로 드립니다
+    </h1>
+    <p class="lede">
+      내부 보고와 검토에 그대로 쓸 수 있도록 만들었습니다.
+      회사 메일 주소만 남기시면 바로 받아보실 수 있습니다.
+    </p>
+  </div>
+</header>
+
+<!-- 리드마그넷 -->
+<section style="padding-top:40px" id="download">
+  <div class="wrap">
+    <div class="gate">
+      <div class="gate-preview reveal-l">
+        <div class="badge42"><span class="n">42</span><span class="t">개 업무</span></div>
+        <div class="paper">
+          <div class="tagline">CHECKLIST · 무료 배포 자료</div>
+          <h4>부서별 AI 업무 자동화<br>체크리스트 42</h4>
+          <div class="row"><span class="bx"></span><span class="ln"></span><span class="pill">교육</span></div>
+          <div class="row"><span class="bx"></span><span class="ln w60"></span><span class="pill">교육</span></div>
+          <div class="row"><span class="bx"></span><span class="ln"></span><span class="pill b">구축</span></div>
+          <div class="row"><span class="bx"></span><span class="ln w60"></span><span class="pill">교육</span></div>
+          <div class="row"><span class="bx"></span><span class="ln"></span><span class="pill b">구축</span></div>
+          <div class="row"><span class="bx"></span><span class="ln w60"></span><span class="pill">교육</span></div>
+        </div>
+      </div>
+      <div class="gate-form reveal-r">
+        <div id="formView">
+          <span class="chip mint">무료 자료 다운로드</span>
+          <h3 style="margin-top:14px">부서별 AI 업무 자동화<br>체크리스트 42</h3>
+          <p class="sub">
+            마케팅 · 기획 · 개발 · HR · 사무총무 · 재무 — 6개 부서의 자동화 가능 업무 42가지를
+            "교육으로 가능한 일"과 "구축이 필요한 일"로 나눠 정리했습니다.
+            부서 회람용으로 인쇄해 쓰세요.
+          </p>
+          <form id="gateForm">
+            <label for="gName">이름 · 직함</label>
+            <input id="gName" type="text" placeholder="김민수 인사팀장" required>
+            <label for="gMail">회사 이메일</label>
+            <input id="gMail" type="email" placeholder="name@company.co.kr" required>
+            <div class="agree">
+              <input type="checkbox" id="gAgree" required>
+              <label for="gAgree" style="margin:0;font-weight:600">자료 발송과 교육 소식 안내를 위한 이메일 수집에 동의합니다. (언제든 수신 거부 가능)</label>
+            </div>
+            <button class="btn primary" type="submit">체크리스트 받기</button>
+          </form>
+        </div>
+        <div class="gate-done" id="doneView">
+          <div class="ok">✓</div>
+          <h4>자료가 열렸습니다!</h4>
+          <p>새 탭에서 체크리스트가 열립니다. 인쇄 버튼으로 PDF 저장도 가능합니다.<br>
+          입력하신 메일로도 링크를 보내드릴게요.</p>
+          <a class="btn soft" style="margin-top:18px" href="checklist.html" target="_blank">다시 열기</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 데이터 인사이트 -->
+<section class="sec-soft">
+  <div class="wrap">
+    <div class="eyebrow">숫자로 보는 기업 AX</div>
+    <h2 class="title">교육 담당자가 알아야 할 <span class="accent">네 가지 숫자</span></h2>
+    <div class="fact-list stagger">
+      <div class="fact">
+        <div class="v">78% vs 30.6%</div>
+        <p>국내 기업의 78%가 AI 필요성에 공감하지만, 실제 경영활동에 활용 중인 곳은 30.6%에 그칩니다.
+        인식과 실행의 격차가 곧 기회입니다.</p>
+        <div class="src">대한상공회의소 · 산업연구원, 국내 기업 AI 기술 활용 실태조사 (500개사)</div>
+      </div>
+      <div class="fact">
+        <div class="v">74%</div>
+        <p>AI를 도입한 기업의 74%가 가치 실현과 확산에 어려움을 겪습니다. 이듬해 조사에서도
+        실질 가치를 만든 기업은 4곳 중 1곳 — 차이는 투자액이 아니라 실행 설계였습니다.</p>
+        <div class="src">BCG, Where's the Value in AI? (2024, 임원 1,000명) · BCG AI Radar 2025</div>
+      </div>
+      <div class="fact">
+        <div class="v">47% vs 20%</div>
+        <p>직원의 47%는 "1년 안에 AI로 업무 30% 이상이 바뀐다"고 답했지만, 그렇게 예상한 경영진은
+        20%뿐. 직원은 이미 준비되어 있습니다 — 조직의 교육이 못 따라갈 뿐.</p>
+        <div class="src">McKinsey, Superagency in the Workplace 2025 (직원 3,613명 · C레벨 238명)</div>
+      </div>
+      <div class="fact">
+        <div class="v">+14~34%</div>
+        <p>생성형 AI를 업무에 제대로 도입한 조직의 실측 생산성 향상. 특히 신입·주니어에서
+        +34%로 가장 컸습니다 — 교육 효과가 가장 빠른 구간입니다.</p>
+        <div class="src">Brynjolfsson·Li·Raymond, Generative AI at Work (NBER, 상담원 5,179명 현장 연구)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 예정 자료 -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow">준비 중인 자료</div>
+    <h2 class="title">다음 자료를 기다려 주세요</h2>
+    <p class="title-desc">체크리스트를 신청하시면 새 자료가 나올 때 가장 먼저 알려드립니다.</p>
+    <div class="soon-grid stagger">
+      <div class="soon">
+        <span class="tag">COMING SOON</span>
+        <h4>사내 AI 사용 가이드라인 템플릿</h4>
+        <p>무엇을 넣어도 되고 안 되는지 — 보안팀 검토용 기준 문서 표준 템플릿.</p>
+      </div>
+      <div class="soon">
+        <span class="tag">COMING SOON</span>
+        <h4>AI 교육 도입 품의서 샘플</h4>
+        <p>교육 담당자가 내부 결재에 바로 쓰는 도입 목적·기대효과·예산 구성 예시.</p>
+      </div>
+      <div class="soon">
+        <span class="tag">COMING SOON</span>
+        <h4>업무 자동화 ROI 계산 시트</h4>
+        <p>건수·소요시간·인건비를 넣으면 자동화 기대 효과가 계산되는 엑셀 시트.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="wrap">
+    <h2>자료보다 빠른 방법도 있습니다</h2>
+    <p>진단 미팅에서 귀사 업무 하나를 직접 AI로 처리해 보여드립니다. 20분이면 충분합니다.</p>
+    <a class="btn primary" href="contact.html">진단 미팅 신청하기</a>
+  </div>
+</section>
+
+<script src="assets/site.js"></script>
+<script>
+  // 다운로드 게이트: FormSubmit AJAX로 리드 접수 후 체크리스트 오픈.
+  // 접수 실패해도 다운로드는 막지 않는다 (리드보다 자료 전달 우선).
+  document.getElementById('gateForm').addEventListener('submit', e => {
+    e.preventDefault();
+    fetch('https://formsubmit.co/ajax/visionmakers101.official@gmail.com', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        _subject: '[CoreNine AI] 체크리스트 다운로드 리드',
+        _template: 'table',
+        '이름/직함': document.getElementById('gName').value.trim(),
+        '이메일': document.getElementById('gMail').value.trim(),
+        '자료': '부서별 AI 업무 자동화 체크리스트 42',
+        _autoresponse: '안녕하세요, CoreNine AI입니다. 요청하신 「부서별 AI 업무 자동화 체크리스트 42」는 접수 화면에서 바로 열람·인쇄하실 수 있습니다. 교육·자동화 관련 궁금한 점은 이 메일에 회신 주세요. 감사합니다.',
+      }),
+    }).catch(() => {});
+    document.getElementById('formView').style.display = 'none';
+    document.getElementById('doneView').style.display = 'block';
+    window.open('checklist.html', '_blank');
+  });
+</script>
+</body>
+</html>

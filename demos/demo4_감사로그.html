@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>감사 로그 · 운영 콘솔 — CoreNine AI 구축 구현물</title>
+<link rel="stylesheet" href="assets/ops.css">
+<style>
+  .actor{display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:11.5px;
+    padding:3px 9px;border-radius:999px}
+  .actor.ai{background:var(--brand-soft);color:var(--brand-strong)}
+  .actor.hu{background:var(--blue-soft);color:var(--blue)}
+  .actor.sys{background:var(--bg);color:var(--sub)}
+  .lg-detail{font-size:11.5px;color:var(--mute)}
+  .search{border:1px solid var(--line);border-radius:9px;padding:7px 12px;font-size:12.5px;
+    font-family:inherit;min-width:180px}
+  .search:focus{outline:2px solid var(--brand-soft);border-color:var(--brand)}
+</style>
+</head>
+<body data-ops="audit">
+
+<div class="layout">
+  <main>
+    <div class="head">
+      <div>
+        <h1>감사 로그</h1>
+        <p>누가(AI·사람·시스템) 언제 무엇을 근거로 처리했는지 전 건 보존 — 수정·삭제 불가, 내보내기 가능</p>
+      </div>
+      <span class="live"><i></i>기록 중 · 오늘 486건</span>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="k">오늘 기록</div><div class="v" id="kToday">486<small> 건</small></div><div class="d">문서 처리·검수·시스템 이벤트</div></div>
+      <div class="kpi"><div class="k">보존 기간</div><div class="v">5<small> 년</small></div><div class="d">전자문서 보존 기준 준수</div></div>
+      <div class="kpi"><div class="k">사람 개입 기록</div><div class="v">14<small> 건</small></div><div class="d">승인 11 · 수정 2 · 수동 전환 1</div></div>
+      <div class="kpi"><div class="k">무결성</div><div class="v">정상</div><div class="d">기록 변조 검증 통과</div></div>
+    </div>
+
+    <div class="panel" style="margin-top:18px">
+      <div class="panel-h">
+        <b>전체 로그</b>
+        <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span class="chips" id="chips">
+            <button class="chip on" data-f="all">전체</button>
+            <button class="chip" data-f="ai">AI 처리</button>
+            <button class="chip" data-f="hu">사람 판단</button>
+            <button class="chip" data-f="sys">시스템</button>
+          </span>
+          <input class="search" id="q" placeholder="문서번호·발신처 검색">
+          <button class="obtn" onclick="opsToast('실제 구축 시 CSV·감사보고서 양식으로 내보내집니다')">내보내기</button>
+        </span>
+      </div>
+      <table>
+        <thead><tr><th>시각</th><th>주체</th><th>문서</th><th>행위</th><th>상세 · 근거</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div style="padding:12px 18px;border-top:1px solid var(--line);font-size:11.5px;color:var(--mute)" id="cnt"></div>
+    </div>
+  </main>
+</div>
+
+<script src="assets/ops.js"></script>
+<script>
+  // type: ai | hu | sys
+  const LOGS = [
+    ['11:02:41','ai','PO-2849','수신 → 추출 완료','대성철강 구매팀 메일 · 4개 필드 · 확신도 82% → 검수함 분기'],
+    ['11:02:12','sys','—','메일함 폴링 정상','IMAP IDLE 재연결 · 지연 없음'],
+    ['10:58:03','ai','PO-2848','ERP 자동 기록','유진파이프 · 1품목 · 확신도 99% · POST /purchase/orders 200'],
+    ['10:55:47','ai','PO-2847','ERP 자동 기록','동아스틸 영업부 · 4품목 · 확신도 97% · 7.4초'],
+    ['10:42:19','hu','PO-2836','검수 승인','김대리 · 납기일 상충 건 → 본문 날짜(7/16) 채택 사유 기록'],
+    ['10:39:55','ai','PO-2846','수신 → 추출 완료','동아스틸 영업부 · 확신도 97% → 자동 경로'],
+    ['10:18:32','hu','PO-2831','수정 후 승인','김대리 · 단가 38,000원/박스로 확정 · 수정 전후 값 보존'],
+    ['10:11:08','sys','—','규칙 업데이트 적용','단가 단위 추론 규칙 v14 배포 · 적용 전 건 영향 없음'],
+    ['09:55:26','hu','PO-2827','검수 승인','박과장 · 신규 품목 CV-80N ERP 품목 등록 후 승인'],
+    ['09:47:50','ai','PO-2845','ERP 자동 기록','대성철강 구매팀 · 2품목 · 확신도 95% · 8.1초'],
+    ['09:40:12','sys','—','세금계산서 발행','PO-2839 외 2건 · 국세청 ASP 전송 완료'],
+    ['09:31:44','hu','PO-2820','수동 처리 전환','김대리 · 수량 단위 미확정 — 발신처 유선 확인 요청'],
+    ['09:22:05','ai','PO-2844','ERP 자동 기록','태광기공 팩스 OCR · 6품목 · 확신도 93%'],
+    ['09:05:33','sys','—','일일 백업 완료','처리 데이터·로그 스냅샷 · 무결성 해시 검증 통과'],
+    ['08:58:20','ai','PO-2843','ERP 자동 기록','유진파이프 · 1품목 · 확신도 99% · 6.9초'],
+    ['08:41:07','sys','—','파이프라인 기동','야간 대기열 0건 · 전 시스템 연결 확인']
+  ];
+  const ACTOR = { ai: 'AI', hu: '사람', sys: '시스템' };
+
+  let filter = 'all', q = '';
+  const rowsEl = document.getElementById('rows');
+
+  function render() {
+    const shown = LOGS.filter(([t, ty, doc, act, det]) =>
+      (filter === 'all' || ty === filter) &&
+      (!q || (doc + det).toLowerCase().includes(q.toLowerCase())));
+    rowsEl.innerHTML = shown.map(([t, ty, doc, act, det]) => `
+      <tr><td class="num" style="font-family:var(--mono);font-size:11.5px">${t}</td>
+      <td><span class="actor ${ty}">${ACTOR[ty]}</span></td>
+      <td class="doc-id">${doc}</td><td style="font-weight:700">${act}</td>
+      <td class="lg-detail">${det}</td></tr>`).join('')
+      || '<tr><td colspan="5" style="text-align:center;color:var(--mute);padding:30px">조건에 맞는 기록이 없습니다</td></tr>';
+    document.getElementById('cnt').textContent =
+      `${shown.length}건 표시 중 · 오늘 전체 486건 · 전체 기간 조회와 기간별 내보내기는 실제 구축 화면에서 제공됩니다`;
+  }
+
+  document.querySelectorAll('#chips .chip').forEach(c => c.addEventListener('click', () => {
+    document.querySelectorAll('#chips .chip').forEach(x => x.classList.remove('on'));
+    c.classList.add('on');
+    filter = c.dataset.f;
+    render();
+  }));
+  document.getElementById('q').addEventListener('input', e => { q = e.target.value; render(); });
+
+  // 신규 로그 유입 시뮬레이션
+  let poId = 2850, today = 486;
+  const NEW_POOL = [
+    ['ai', 'ERP 자동 기록', s => `${s} · 확신도 ${91 + Math.floor(Math.random() * 9)}% · ${(6 + Math.random() * 4).toFixed(1)}초`],
+    ['ai', '수신 → 추출 완료', s => `${s} 메일 · 추출 시작`],
+    ['sys', '메일함 폴링 정상', () => 'IMAP IDLE · 지연 없음']
+  ];
+  const SENDERS = ['대성철강 구매팀','한빛산업 자재과','동아스틸 영업부','유진파이프','서진금속'];
+  setInterval(() => {
+    const [ty, act, detFn] = NEW_POOL[Math.floor(Math.random() * NEW_POOL.length)];
+    const doc = ty === 'sys' ? '—' : 'PO-' + (++poId);
+    LOGS.unshift([opsNow(), ty, doc, act, detFn(SENDERS[Math.floor(Math.random() * SENDERS.length)])]);
+    if (LOGS.length > 30) LOGS.pop();
+    today++;
+    document.getElementById('kToday').innerHTML = today + '<small> 건</small>';
+    render();
+  }, 6500);
+
+  render();
+</script>
+</body>
+</html>

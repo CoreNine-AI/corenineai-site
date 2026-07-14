@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>고객 사례 (시나리오) — CoreNine AI</title>
+<meta name="description" content="체험 데모 기반 시나리오 사례 — 도입 시 업무가 어떻게 바뀌는지 프로그램 예시로 보여드립니다.">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .notice{margin-top:36px;background:#FFF8E8;border:1px solid #F2DFAC;border-radius:14px;
+    padding:18px 22px;font-size:13.5px;color:#7A5B12;line-height:1.75;position:relative}
+  .notice b{color:#5C440B}
+
+  .case{margin-top:56px;border:1px solid var(--line);border-radius:22px;overflow:hidden;background:#fff;box-shadow:var(--shadow-sm)}
+  .case-head{padding:36px 40px 0}
+  .case-head .kind{font-size:12.5px;font-weight:800;letter-spacing:.1em;color:var(--brand-strong)}
+  .case-head h3{margin-top:10px;font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.45}
+  .case-body{display:grid;grid-template-columns:1fr 1fr;gap:36px;padding:28px 40px 40px;align-items:start}
+  .case .gif{border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow-md)}
+  .case .gif img{width:100%;display:block}
+  .case .gif .cap{padding:10px 16px;font-size:12px;color:var(--mute);background:var(--bg-soft);border-top:1px solid var(--line)}
+
+  .blk{margin-top:20px}
+  .blk:first-child{margin-top:0}
+  .blk .k{font-size:12.5px;font-weight:800;letter-spacing:.08em;color:var(--brand-strong)}
+  .blk p{margin-top:8px;font-size:14.5px;color:var(--sub);line-height:1.85}
+  .blk p b{color:var(--ink)}
+  .nums{margin-top:22px;display:flex;gap:12px;flex-wrap:wrap}
+  .num{background:var(--brand-softer);border:1px solid var(--brand-line);border-radius:12px;padding:14px 20px}
+  .num .v{font-size:20px;font-weight:800;color:var(--brand-ink)}
+  .num .l{font-size:12px;color:var(--sub);margin-top:2px}
+  .case .try{margin-top:24px;display:flex;gap:10px;flex-wrap:wrap}
+
+  @media (max-width:960px){
+    .case-body{grid-template-columns:1fr;padding:24px 24px 32px}
+    .case-head{padding:28px 24px 0}
+  }
+</style>
+</head>
+<body data-page="cases">
+
+<header class="page-hero">
+  <div class="wrap">
+    <div class="crumb"><a href="index.html">홈</a> / 고객 사례</div>
+    <h1>
+      도입하면 업무가 어떻게 바뀌는지,<br>
+      <span class="accent">시나리오 사례</span>로 보여드립니다
+    </h1>
+    <p class="lede">
+      아래 사례는 실제 운영 중인 <b>체험 데모 프로그램</b>을 기반으로,
+      도입 시의 업무 변화를 시나리오로 구성한 것입니다.
+      모든 데모는 지금 바로 직접 실행해 보실 수 있습니다.
+      공통 업무를 넘어 <b>귀사 업(業)의 핵심 공정</b>까지 —
+      산업 특화 자동화 구축으로 이어집니다.
+    </p>
+  </div>
+</header>
+
+<section id="demos" style="padding-top:28px">
+  <div class="wrap">
+
+    <!-- CASE 1 -->
+    <article class="case reveal">
+      <div class="case-head">
+        <span class="kind">SCENARIO 01 · 사무·영업관리 — 예시 프로그램</span>
+        <h3>매주 금요일 오후를 잡아먹던 주간보고,<br>메모 몇 줄로 끝내기</h3>
+      </div>
+      <div class="case-body">
+        <div>
+          <div class="blk">
+            <span class="k">이런 상황이라면</span>
+            <p>팀원 8명이 매주 각자 40분씩 주간보고를 씁니다. 형식 맞추기에 시간을 쓰다 보니
+            정작 내용은 부실해지고, 팀장은 취합하며 다시 고칩니다.</p>
+          </div>
+          <div class="blk">
+            <span class="k">프로그램이 하는 일</span>
+            <p>한 주간의 <b>메모·일정·처리 건을 그대로 붙여넣으면</b>, 팀 보고 서식에 맞춘
+            개조식 보고서로 변환합니다. 실적은 표로, 이슈는 원인·대응·요청사항으로 구조화됩니다.</p>
+          </div>
+          <div class="blk">
+            <span class="k">교육에서는</span>
+            <p>실무자 워크숍 실습 ①에서 참가자 본인의 보고 서식으로 직접 만듭니다.
+            <b>교육 다음 주 보고부터 바로 적용</b>하는 것이 과정 목표입니다.</p>
+          </div>
+          <div class="nums">
+            <div class="num"><div class="v">40분 → 10분</div><div class="l">1인 주간 작성 시간</div></div>
+            <div class="num"><div class="v">주 4시간</div><div class="l">팀 단위 환산 절감 (8명 기준)</div></div>
+          </div>
+          <div class="try">
+            <a class="btn sm primary" href="../demos/demo3_주간보고_자동생성.html">데모 직접 실행하기</a>
+            <a class="btn sm ghost" href="course.html#office-doc">관련 과정: 문서·보고 업무 자동화</a>
+          </div>
+        </div>
+        <div class="gif">
+          <img src="assets/demo3_주간보고_시연.gif" alt="주간보고 자동 생성 데모 시연 화면" loading="lazy">
+          <div class="cap">실제 데모 프로그램 시연 화면 — 시뮬레이션 모드</div>
+        </div>
+      </div>
+    </article>
+
+    <!-- CASE 2 -->
+    <article class="case reveal">
+      <div class="case-head">
+        <span class="kind">SCENARIO 02 · 구매·물류 — 예시 프로그램</span>
+        <h3>하루 수십 통의 발주 메일,<br>읽고 옮겨 적는 일을 시스템에게</h3>
+      </div>
+      <div class="case-body">
+        <div class="gif">
+          <img src="assets/demo2_발주메일추출_시연.gif" alt="발주 메일 자동 입력 데모 시연 화면" loading="lazy">
+          <div class="cap">실제 데모 프로그램 시연 화면 — 시뮬레이션 모드</div>
+        </div>
+        <div>
+          <div class="blk">
+            <span class="k">이런 상황이라면</span>
+            <p>거래처마다 발주 메일 양식이 제각각입니다. 담당자가 메일을 읽고 품목·수량·단가·납기를
+            시스템에 옮겨 적는 데 건당 4분 — 하루 30건이면 2시간이고, 바쁠수록 오타가 늘어납니다.</p>
+          </div>
+          <div class="blk">
+            <span class="k">프로그램이 하는 일</span>
+            <p>형식이 제멋대로인 발주 메일에서 <b>품목·수량·단가·납기를 자동 추출해 표로 정리</b>하고,
+            엑셀 파일로 내려받거나 시스템 입력용 데이터로 변환합니다.</p>
+          </div>
+          <div class="blk">
+            <span class="k">구축으로 확장하면</span>
+            <p>메일함을 상시 감시해 수신 즉시 처리하고, 애매한 건만 사람 검수함으로 보내며,
+            ERP에 직접 기록하는 <b>무인 파이프라인</b>으로 확장됩니다.</p>
+          </div>
+          <div class="nums">
+            <div class="num"><div class="v">4분 → 8초</div><div class="l">1건 처리 시간</div></div>
+            <div class="num"><div class="v">하루 2시간</div><div class="l">환산 절감 (일 30건 기준)</div></div>
+          </div>
+          <div class="try">
+            <a class="btn sm primary" href="../demos/demo2_발주메일_자동입력.html">데모 직접 실행하기</a>
+            <a class="btn sm ghost" href="build.html">구축 서비스 보기</a>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- CASE 3 -->
+    <article class="case reveal">
+      <div class="case-head">
+        <span class="kind">SCENARIO 03 · 인사·총무 — 예시 프로그램</span>
+        <h3>"휴가 규정이 어떻게 되죠?"<br>같은 질문에 하루 종일 답하지 않아도 되도록</h3>
+      </div>
+      <div class="case-body">
+        <div>
+          <div class="blk">
+            <span class="k">이런 상황이라면</span>
+            <p>취업규칙·경비 규정·보안 지침이 여기저기 흩어져 있어, 결국 인사팀·총무팀에
+            같은 질문이 반복해서 들어옵니다. 답하는 쪽도, 묻는 쪽도 시간이 아깝습니다.</p>
+          </div>
+          <div class="blk">
+            <span class="k">프로그램이 하는 일</span>
+            <p>사내 규정 문서를 읽고 <b>근거 조항을 인용하며</b> 답합니다.
+            "연차 이월이 되나요?"에 규정 몇 조 몇 항인지까지 함께 제시하므로,
+            AI가 지어낸 답과 구분됩니다.</p>
+          </div>
+          <div class="blk">
+            <span class="k">구축으로 확장하면</span>
+            <p>수천 건의 문서 자동 동기화, 부서·직급별 접근 권한, 사내 메신저 연동이 더해진
+            <b>사내 지식 시스템</b>이 됩니다.</p>
+          </div>
+          <div class="nums">
+            <div class="num"><div class="v">근거 인용</div><div class="l">모든 답변에 출처 조항 표시</div></div>
+            <div class="num"><div class="v">반복 문의 응대 부담 해소</div><div class="l">담당 부서 업무 집중</div></div>
+          </div>
+          <div class="try">
+            <a class="btn sm primary" href="../demos/demo1_사내문서QA봇.html">데모 직접 실행하기</a>
+            <a class="btn sm ghost" href="build.html">구축 서비스 보기</a>
+          </div>
+        </div>
+        <div class="gif">
+          <img src="assets/demo1_사내문서QA_시연.gif" alt="사내 규정 Q&A 봇 데모 시연 화면" loading="lazy">
+          <div class="cap">실제 데모 프로그램 시연 화면 — 시뮬레이션 모드</div>
+        </div>
+      </div>
+    </article>
+
+    <!-- 구축 구현물 -->
+    <article class="case reveal" style="border:none;background:
+      radial-gradient(700px 360px at 90% -20%,rgba(11,185,133,.28) 0%,transparent 60%),
+      linear-gradient(140deg,var(--forest) 0%,var(--forest-2) 100%);color:#fff">
+      <div class="case-head">
+        <span class="kind" style="color:var(--lime)">BUILD PREVIEW · 구축 구현물</span>
+        <h3 style="color:#fff">교육 수준이 아니라, 이런 것을 구축합니다 —<br>자동처리 파이프라인 운영 콘솔</h3>
+      </div>
+      <div class="case-body">
+        <div>
+          <div class="blk">
+            <span class="k" style="color:var(--lime)">무엇을 보게 되나요</span>
+            <p style="color:#B9CFC5">발주 메일이 수신되는 즉시 AI가 추출·검증해 ERP에 기록하고,
+            확신도가 낮은 건만 사람 검수함으로 보내는 <b style="color:#fff">실제 구축 시스템의 운영 화면</b>입니다.
+            실시간 처리 피드, 검수 승인, 감사 로그까지 직접 조작해 보세요.</p>
+          </div>
+          <div class="nums">
+            <div class="num" style="background:rgba(201,242,78,.1);border-color:rgba(201,242,78,.3)"><div class="v" style="color:var(--lime)">자동 처리율 94%+</div><div class="l" style="color:#8FAEA0">사람 개입 없이 ERP 기록</div></div>
+            <div class="num" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15)"><div class="v" style="color:#fff">전 건 감사 로그</div><div class="l" style="color:#8FAEA0">처리 근거 추적 가능</div></div>
+          </div>
+          <div class="try">
+            <a class="btn sm lime" href="../demos/demo4_구축_운영콘솔.html">운영 콘솔 직접 조작해 보기</a>
+            <a class="btn sm" style="background:rgba(255,255,255,.1);color:#fff" href="build.html">구축 서비스 보기</a>
+          </div>
+        </div>
+        <div class="gif" style="border-color:rgba(255,255,255,.15)">
+          <a href="../demos/demo4_구축_운영콘솔.html" style="display:block;background:#fff;padding:0">
+            <img src="assets/demo4_운영콘솔_미리보기.png" alt="자동처리 파이프라인 운영 콘솔 화면" loading="lazy">
+          </a>
+          <div class="cap" style="background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:#8FAEA0">구축 구현물 미리보기 — 시뮬레이션 데이터</div>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="wrap">
+    <h2>다음 사례의 주인공이 되어주세요</h2>
+    <p>첫 진단 미팅에서 귀사의 실제 업무 하나를 그 자리에서 처리해 보여드립니다.
+    가능성을 확인한 뒤에 결정하셔도 늦지 않습니다.</p>
+    <a class="btn primary" href="contact.html">진단 미팅 신청하기</a>
+  </div>
+</section>
+
+<script src="assets/site.js"></script>
+</body>
+</html>

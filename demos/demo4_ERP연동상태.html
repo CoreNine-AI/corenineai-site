@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERP 연동 상태 · 운영 콘솔 — CoreNine AI 구축 구현물</title>
+<link rel="stylesheet" href="assets/ops.css">
+<style>
+  /* 연동 대상 카드 */
+  .conns{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:18px}
+  .conn{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+  .conn .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .conn b{font-size:13.5px}
+  .conn .sysname{font-size:11.5px;color:var(--mute);margin-top:2px}
+  .conn .rows{margin-top:14px;font-size:12px;color:var(--sub);display:grid;gap:6px}
+  .conn .rows .r{display:flex;justify-content:space-between;gap:8px}
+  .conn .rows .r i{font-style:normal;color:var(--mute)}
+  .conn .rows .r em{font-style:normal;font-weight:800;font-variant-numeric:tabular-nums}
+  .dot-st{width:9px;height:9px;border-radius:50%;background:var(--brand);flex:none}
+  .dot-st.warn{background:var(--amber)}
+  .conn.degraded{border-color:var(--amber)}
+
+  /* 가동률 스트립 (24h × 시간 블록) */
+  .up-strip{display:flex;gap:3px;padding:16px 18px 6px}
+  .up-strip i{flex:1;height:26px;border-radius:4px;background:var(--brand);opacity:.85;cursor:default}
+  .up-strip i.deg{background:var(--amber)}
+  .up-strip i.off{background:var(--bg);border:1px solid var(--line)}
+  .up-cap{display:flex;justify-content:space-between;padding:6px 18px 16px;font-size:11px;color:var(--mute)}
+
+  .grid2{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-top:14px;align-items:start}
+  .code{font-family:var(--mono);font-size:11.5px}
+  .ep{color:var(--sub)}
+  .ms{font-variant-numeric:tabular-nums;font-weight:700}
+  .ms.slow{color:var(--amber)}
+  .http{font-weight:800}
+  .http.ok{color:var(--brand-strong)}
+  .http.retry{color:var(--amber)}
+
+  @media (max-width:1050px){.conns{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-ops="erp">
+
+<div class="layout">
+  <main>
+    <div class="head">
+      <div>
+        <h1>ERP 연동 상태</h1>
+        <p>파이프라인이 기록하는 모든 외부 시스템의 연결 상태와 호출 내역 — 장애 시 자동 재시도·격리 후 알림</p>
+      </div>
+      <span class="live"><i></i>4개 시스템 연결됨</span>
+    </div>
+
+    <div class="conns">
+      <div class="conn" id="cErp">
+        <div class="top"><div><b>ERP 구매 모듈</b><div class="sysname">더존 iCUBE · REST API</div></div><span class="dot-st"></span></div>
+        <div class="rows">
+          <div class="r"><i>상태</i><em style="color:var(--brand-strong)" id="erpSt">정상</em></div>
+          <div class="r"><i>응답 속도</i><em id="erpMs">142 ms</em></div>
+          <div class="r"><i>마지막 기록</i><em id="erpLast">방금 전</em></div>
+          <div class="r"><i>오늘 호출</i><em id="erpCalls">312회 · 실패 0</em></div>
+        </div>
+      </div>
+      <div class="conn">
+        <div class="top"><div><b>메일함 감시</b><div class="sysname">회사 메일 · IMAP IDLE</div></div><span class="dot-st"></span></div>
+        <div class="rows">
+          <div class="r"><i>상태</i><em style="color:var(--brand-strong)">정상</em></div>
+          <div class="r"><i>감시 폴더</i><em>발주접수 외 2개</em></div>
+          <div class="r"><i>마지막 수신</i><em id="mailLast">1분 전</em></div>
+          <div class="r"><i>오늘 수신</i><em>147건</em></div>
+        </div>
+      </div>
+      <div class="conn">
+        <div class="top"><div><b>팩스 OCR 게이트웨이</b><div class="sysname">스캔 폴더 감시 · OCR 엔진</div></div><span class="dot-st"></span></div>
+        <div class="rows">
+          <div class="r"><i>상태</i><em style="color:var(--brand-strong)">정상</em></div>
+          <div class="r"><i>OCR 평균</i><em>3.1 초/장</em></div>
+          <div class="r"><i>마지막 처리</i><em>14분 전</em></div>
+          <div class="r"><i>오늘 처리</i><em>23장</em></div>
+        </div>
+      </div>
+      <div class="conn">
+        <div class="top"><div><b>전자세금계산서</b><div class="sysname">국세청 ASP 연동</div></div><span class="dot-st"></span></div>
+        <div class="rows">
+          <div class="r"><i>상태</i><em style="color:var(--brand-strong)">정상</em></div>
+          <div class="r"><i>발행 대기</i><em>2건</em></div>
+          <div class="r"><i>마지막 발행</i><em>09:40</em></div>
+          <div class="r"><i>오늘 발행</i><em>18건</em></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:14px">
+      <div class="panel-h"><b>최근 24시간 가동률</b><span>ERP 구매 모듈 API 기준 · 99.97%</span></div>
+      <div class="up-strip" id="upStrip"></div>
+      <div class="up-cap"><span>24시간 전</span><span>■ 정상 · <span style="color:var(--amber)">■ 지연(자동 재시도)</span></span><span>현재</span></div>
+    </div>
+
+    <div class="grid2">
+      <div class="panel">
+        <div class="panel-h"><b>API 호출 내역</b><span>실시간 · 최근 순</span></div>
+        <table>
+          <thead><tr><th>시각</th><th>문서</th><th>엔드포인트</th><th>응답</th><th>속도</th></tr></thead>
+          <tbody id="apiFeed"></tbody>
+        </table>
+      </div>
+
+      <div class="panel">
+        <div class="panel-h"><b>장애 대응 원칙</b><span>구축 시 함께 설계됩니다</span></div>
+        <div style="padding:16px 18px;font-size:13px;color:var(--sub);line-height:1.85">
+          <p><b style="color:var(--ink)">① 자동 재시도</b> — 일시 오류(타임아웃·5xx)는 30초 간격 3회 재시도 후 성공 시 그대로 진행합니다.</p>
+          <p style="margin-top:10px"><b style="color:var(--ink)">② 격리 후 보존</b> — 재시도 실패 건은 유실되지 않고 대기열에 격리, 연결 복구 시 자동 재전송됩니다.</p>
+          <p style="margin-top:10px"><b style="color:var(--ink)">③ 사람에게 알림</b> — 5분 이상 연결 불가 시 담당자에게 즉시 알림이 갑니다. 조용히 죽는 시스템은 만들지 않습니다.</p>
+          <p style="margin-top:14px;font-size:11.5px;color:var(--mute)">※ 오늘 04:12 ERP 정기점검으로 11분간 지연 — 대기열 9건 자동 재전송 완료, 유실 0건.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="assets/ops.js"></script>
+<script>
+  // 가동률 스트립: 48블록(30분 단위), 04:00~04:30 구간 지연 표시
+  const strip = document.getElementById('upStrip');
+  for (let i = 0; i < 48; i++) {
+    const deg = (i === 8); // 약 24시간 전 기준 4시간째 블록 = 04시대 점검
+    strip.insertAdjacentHTML('beforeend', `<i class="${deg ? 'deg' : ''}" title="${deg ? '04:12 정기점검 지연 · 자동 재시도로 유실 0건' : '정상'}"></i>`);
+  }
+
+  // API 호출 내역 시뮬레이션
+  const EPS = [
+    ['POST /purchase/orders', 'PO 기록'],
+    ['GET /items/lookup', '품목 조회'],
+    ['POST /purchase/orders/{id}/lines', '품목 라인 기록'],
+    ['GET /vendors/match', '거래처 매칭']
+  ];
+  let poId = 2850, calls = 312;
+  const apiFeed = document.getElementById('apiFeed');
+
+  function addCall(init) {
+    const [ep] = EPS[Math.floor(Math.random() * EPS.length)];
+    const slow = Math.random() < 0.08;
+    const ms = slow ? 900 + Math.floor(Math.random() * 800) : 90 + Math.floor(Math.random() * 160);
+    const doc = 'PO-' + (poId - Math.floor(Math.random() * 4));
+    apiFeed.insertAdjacentHTML('afterbegin', `
+      <tr${init ? '' : ' class="new-row"'}><td class="num">${opsNow()}</td>
+      <td class="doc-id">${doc}</td><td class="code ep">${ep}</td>
+      <td><span class="http ${slow ? 'retry' : 'ok'}">${slow ? '재시도 → 200' : '200 OK'}</span></td>
+      <td class="code ms${slow ? ' slow' : ''}">${ms} ms</td></tr>`);
+    while (apiFeed.children.length > 11) apiFeed.lastChild.remove();
+    if (!init) {
+      calls++;
+      document.getElementById('erpCalls').textContent = calls + '회 · 실패 0';
+      document.getElementById('erpMs').textContent = ms + ' ms';
+      document.getElementById('erpLast').textContent = '방금 전';
+    }
+  }
+  for (let i = 0; i < 8; i++) addCall(true);
+  setInterval(() => { addCall(); if (Math.random() < 0.3) poId++; }, 3400);
+</script>
+</body>
+</html>

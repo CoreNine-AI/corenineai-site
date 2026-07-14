@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>정확도 추이 · 운영 콘솔 — CoreNine AI 구축 구현물</title>
+<link rel="stylesheet" href="assets/ops.css">
+<style>
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;align-items:start}
+  .err-row{display:grid;grid-template-columns:190px 1fr 52px;gap:10px;align-items:center;
+    padding:10px 18px;border-top:1px solid var(--line);font-size:12.5px}
+  .err-row:first-of-type{border-top:none}
+  .err-row .nm{font-weight:700;color:var(--sub)}
+  .err-row .tr{display:block;height:9px;border-radius:5px;background:var(--bg);overflow:hidden}
+  .err-row .fl{display:block;height:100%;border-radius:5px;background:#047857}
+  .err-row .pv{font-variant-numeric:tabular-nums;font-weight:800;text-align:right}
+  .improve-note{padding:14px 18px;border-top:1px dashed var(--line);font-size:12px;color:var(--mute);line-height:1.8}
+  @media (max-width:1050px){.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-ops="accuracy">
+
+<div class="layout">
+  <main>
+    <div class="head">
+      <div>
+        <h1>정확도 추이</h1>
+        <p>추출 필드가 사람 검수 결과와 일치한 비율 — 검수·수정 데이터가 다시 규칙에 반영되어 매주 좋아집니다</p>
+      </div>
+      <span class="live"><i></i>주간 집계 · 7/13 기준</span>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="k">이번 주 필드 정확도</div><div class="v">99.2<small> %</small></div><div class="d">▲ 도입 첫 주 94.1% → +5.1%p</div></div>
+      <div class="kpi"><div class="k">치명 오류</div><div class="v">0<small> 건</small></div><div class="d">잘못된 값이 ERP에 기록된 건</div></div>
+      <div class="kpi"><div class="k">검수에서 수정된 건</div><div class="v">2<small> 건</small></div><div class="d" style="color:var(--amber)">이번 주 · 수정 내역 규칙 반영</div></div>
+      <div class="kpi"><div class="k">규칙 업데이트</div><div class="v">14<small> 회</small></div><div class="d">도입 후 누적 · 전부 기록 보존</div></div>
+    </div>
+
+    <div class="panel" style="margin-top:14px">
+      <div class="panel-h"><b>주간 필드 정확도 — 도입 후 12주</b><span>포인트에 마우스를 올리면 상세가 보입니다</span></div>
+      <div class="chart-wrap"><svg id="accChart" width="100%" height="270" viewBox="0 0 860 270"></svg></div>
+      <div class="improve-note" style="border-top:1px solid var(--line)">
+        ◆ 표시는 규칙·모델 업데이트 시점입니다 — 3주차: 단가 단위 규칙 추가 · 6주차: 팩스 OCR 전처리 개선 · 9주차: 품목 마스터 동기화 자동화.
+        정확도는 "AI가 맞다고 한 것"이 아니라 <b>사람 검수 결과와 대조해 확정</b>한 수치입니다.
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="panel">
+        <div class="panel-h"><b>필드별 정확도</b><span>이번 주 · 검수 대조 기준</span></div>
+        <div id="fieldAcc"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-h"><b>남은 오류의 유형</b><span>이번 주 오류 8건 분석</span></div>
+        <div id="errTypes"></div>
+        <div class="improve-note">
+          오류의 대부분은 "AI가 틀림"이 아니라 <b>원문 자체의 모호함</b>입니다 —
+          이런 건은 자동 기록하지 않고 검수함으로 보내는 것이 이 시스템의 설계 원칙입니다.
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="assets/ops.js"></script>
+<script>
+  // ---------- 주간 정확도 라인 차트 ----------
+  const WEEKS = ['1주','2주','3주','4주','5주','6주','7주','8주','9주','10주','11주','12주'];
+  const ACC   = [94.1, 95.0, 96.4, 96.8, 97.1, 98.0, 98.2, 98.4, 98.9, 99.0, 99.1, 99.2];
+  const EVENTS = { 2: '단가 단위 규칙 추가', 5: '팩스 OCR 전처리 개선', 8: '품목 마스터 동기화 자동화' };
+
+  (function drawLine(){
+    const svg = document.getElementById('accChart');
+    const W = 860, H = 270, padL = 52, padR = 18, padT = 18, padB = 32;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const yMin = 92, yMax = 100;
+    const X = i => padL + plotW * i / (WEEKS.length - 1);
+    const Y = v => padT + plotH * (1 - (v - yMin) / (yMax - yMin));
+    let out = '';
+
+    [92, 94, 96, 98, 100].forEach(v => {
+      out += `<line x1="${padL}" y1="${Y(v)}" x2="${W - padR}" y2="${Y(v)}" stroke="#E4E9F0" stroke-width="1"/>`;
+      out += `<text x="${padL - 8}" y="${Y(v) + 4}" text-anchor="end" font-size="10.5" fill="#8593A6">${v}%</text>`;
+    });
+    out += `<text x="${padL + 10}" y="${padT + 4}" font-size="10.5" fill="#8593A6">※ 세로축은 92%부터 — 변화를 보기 위한 확대</text>`;
+
+    // 면 채움(옅게) + 라인
+    const pts = ACC.map((v, i) => `${X(i)},${Y(v)}`).join(' ');
+    out += `<polygon points="${X(0)},${Y(yMin)} ${pts} ${X(ACC.length - 1)},${Y(yMin)}" fill="#047857" opacity="0.07"/>`;
+    out += `<polyline points="${pts}" fill="none" stroke="#047857" stroke-width="2" stroke-linejoin="round"/>`;
+
+    // 이벤트 마커(◆) + 포인트
+    ACC.forEach((v, i) => {
+      if (EVENTS[i] !== undefined) {
+        out += `<path d="M${X(i)},${Y(v) - 14} l5,5 l-5,5 l-5,-5 Z" fill="#1D6FD6"/>`;
+      }
+      out += `<circle class="pt" data-i="${i}" cx="${X(i)}" cy="${Y(v)}" r="4.5" fill="#047857" stroke="#fff" stroke-width="2"/>`;
+      out += `<circle class="pt-hit" data-i="${i}" cx="${X(i)}" cy="${Y(v)}" r="14" fill="transparent" cursor="default"/>`;
+      if (i % 2 === 1 || i === 0) {
+        out += `<text x="${X(i)}" y="${H - 10}" text-anchor="middle" font-size="10.5" fill="#8593A6">${WEEKS[i]}</text>`;
+      }
+    });
+    // 시작/끝 직접 라벨
+    out += `<text x="${X(0) + 2}" y="${Y(ACC[0]) - 12}" font-size="11.5" font-weight="800" fill="#046B50">94.1%</text>`;
+    out += `<text x="${X(11) - 4}" y="${Y(ACC[11]) - 12}" text-anchor="end" font-size="11.5" font-weight="800" fill="#046B50">99.2%</text>`;
+
+    svg.innerHTML = out;
+    svg.querySelectorAll('.pt-hit').forEach(c => {
+      c.addEventListener('mousemove', e => {
+        const i = +c.dataset.i;
+        const ev = EVENTS[i] ? `<br>◆ ${EVENTS[i]}` : '';
+        opsTip.show(`<b>도입 ${WEEKS[i]}차</b><br>필드 정확도 ${ACC[i]}%${ev}`, e.clientX, e.clientY);
+      });
+      c.addEventListener('mouseleave', () => opsTip.hide());
+    });
+  })();
+
+  // ---------- 필드별 정확도 ----------
+  const FIELDS = [
+    ['발주번호', 99.9], ['발신처(거래처 매칭)', 99.7], ['품목명', 99.0],
+    ['수량·단위', 99.3], ['단가', 98.6], ['납기일', 99.4]
+  ];
+  document.getElementById('fieldAcc').innerHTML = FIELDS.map(([k, v]) => `
+    <div class="err-row"><span class="nm">${k}</span>
+    <span class="tr"><span class="fl" style="width:${(v - 92) / 8 * 100}%"></span></span>
+    <span class="pv">${v}%</span></div>`).join('');
+
+  // ---------- 오류 유형 ----------
+  const ERRS = [
+    ['원문 자체 모호 (단위·상충)', 4], ['팩스 저화질 OCR', 2],
+    ['신규 품목 미등록', 1], ['추출 오류 (모델)', 1]
+  ];
+  const maxErr = 4;
+  document.getElementById('errTypes').innerHTML = ERRS.map(([k, v]) => `
+    <div class="err-row"><span class="nm">${k}</span>
+    <span class="tr"><span class="fl" style="width:${v / maxErr * 100}%;background:#1D6FD6"></span></span>
+    <span class="pv">${v}건</span></div>`).join('');
+</script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>운영 대시보드 · 문서 자동처리 파이프라인 — CoreNine AI 구축 구현물</title>
+<link rel="stylesheet" href="assets/ops.css">
+<style>
+  /* 검수함 요약 카드 */
+  .review-item{padding:13px 18px;border-top:1px solid var(--line)}
+  .review-item:first-of-type{border-top:none}
+  .review-item .t{display:flex;justify-content:space-between;gap:8px;font-weight:800;font-size:12.5px}
+  .review-item .why{margin-top:4px;font-size:12px;color:var(--amber);font-weight:600}
+  .review-item .meta{margin-top:6px;font-size:11.5px;color:var(--mute)}
+  .review-item .acts{margin-top:9px;display:flex;gap:7px}
+  .empty-review{padding:30px 18px;text-align:center;color:var(--mute);font-size:12.5px}
+  .panel-h a{font-size:11.5px;font-weight:800;color:var(--brand-strong);text-decoration:none}
+  .panel-h a:hover{text-decoration:underline}
+
+  /* 파이프라인 상태 */
+  .pipe{display:flex;align-items:center;gap:0;padding:18px 16px 20px;overflow-x:auto}
+  .pnode{flex:1;min-width:92px;text-align:center;position:relative}
+  .pnode:not(:last-child)::after{content:"";position:absolute;top:17px;left:calc(50% + 22px);right:calc(-50% + 22px);height:2px;background:#B8E9D6}
+  .pnode .ic{width:34px;height:34px;border-radius:11px;background:var(--brand-soft);color:var(--brand-strong);
+    display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;margin:0 auto;position:relative;z-index:1}
+  .pnode b{display:block;font-size:11.5px;margin-top:7px}
+  .pnode span{font-size:10.5px;color:var(--mute)}
+
+  .grid{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-top:14px;align-items:start}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-ops="dashboard">
+
+<div class="layout">
+  <main>
+    <div class="head">
+      <div>
+        <h1>발주 문서 자동처리 파이프라인</h1>
+        <p>메일함 상시 감시 → AI 추출·검증 → ERP 기록 · 애매한 건만 사람 검수</p>
+      </div>
+      <span class="live"><i></i>실시간 가동 중</span>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="k">오늘 처리 건수</div><div class="v" id="kTotal">147<small> 건</small></div><div class="d">▲ 어제 대비 +12</div></div>
+      <div class="kpi"><div class="k">자동 처리율</div><div class="v" id="kAuto">94.6<small> %</small></div><div class="d">사람 개입 없이 ERP 기록</div></div>
+      <div class="kpi"><div class="k">검수 대기</div><div class="v" id="kReview">2<small> 건</small></div><div class="d" style="color:var(--amber)">확신도 90% 미만 건</div></div>
+      <div class="kpi"><div class="k">건당 평균 처리</div><div class="v">8.2<small> 초</small></div><div class="d">수기 입력 대비 −96%</div></div>
+    </div>
+
+    <div class="panel" style="margin-top:14px">
+      <div class="panel-h"><b>파이프라인 상태</b><a href="demo4_ERP연동상태.html">ERP 연동 상세 →</a></div>
+      <div class="pipe">
+        <div class="pnode"><div class="ic">✉</div><b>수신 감시</b><span>메일 · 팩스 OCR</span></div>
+        <div class="pnode"><div class="ic">AI</div><b>추출 · 구조화</b><span>품목·수량·단가·납기</span></div>
+        <div class="pnode"><div class="ic">✓</div><b>검증 · 분기</b><span>확신도 기반</span></div>
+        <div class="pnode"><div class="ic">⇄</div><b>ERP 기록</b><span>구매 모듈 API</span></div>
+        <div class="pnode"><div class="ic">☰</div><b>알림 · 로그</b><span>담당자 · 감사 추적</span></div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <div class="panel-h"><b>실시간 처리 피드</b><span id="feedNote">신규 문서가 자동으로 흘러들어옵니다</span></div>
+        <table>
+          <thead><tr><th>문서</th><th>발신처</th><th>품목 수</th><th>확신도</th><th>상태</th></tr></thead>
+          <tbody id="feed"></tbody>
+        </table>
+      </div>
+
+      <div>
+        <div class="panel">
+          <div class="panel-h"><b>검수함</b><a href="demo4_검수함.html">전체 검수함 열기 →</a></div>
+          <div id="reviewBox"></div>
+        </div>
+        <div class="panel" style="margin-top:14px">
+          <div class="panel-h"><b>감사 로그</b><a href="demo4_감사로그.html">전체 로그 →</a></div>
+          <div class="log" id="log"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="assets/ops.js"></script>
+<script>
+  // ---------- 시뮬레이션 데이터 ----------
+  const SENDERS = ['대성철강 구매팀','한빛산업 자재과','금호테크 발주담당','서진금속','동아스틸 영업부','태광기공','유진파이프','신일밸브 구매과'];
+  const ITEMS = [3,2,5,4,1,6,2,3];
+  let seq = 2847, total = 147, autoCount = 139;
+
+  const feed = document.getElementById('feed');
+  const logEl = document.getElementById('log');
+  const reviewBox = document.getElementById('reviewBox');
+  const pendingReviews = [];
+
+  function addLog(msg, cls) {
+    logEl.insertAdjacentHTML('afterbegin',
+      `<div><span class="t">[${opsNow()}]</span> <span class="${cls||''}">${msg}</span></div>`);
+    while (logEl.children.length > 40) logEl.lastChild.remove();
+  }
+  function renderReviews() {
+    document.getElementById('kReview').innerHTML = pendingReviews.length + '<small> 건</small>';
+    reviewBox.innerHTML = pendingReviews.length ? pendingReviews.map(r => `
+      <div class="review-item" data-id="${r.id}">
+        <div class="t"><span>PO-${r.id} · ${r.sender}</span><span class="conf lo">${r.conf}%</span></div>
+        <div class="why">⚠ ${r.why}</div>
+        <div class="meta">품목 ${r.items}건 · <a href="demo4_검수함.html" style="color:inherit">검수함에서 원문 비교 →</a></div>
+        <div class="acts">
+          <button class="obtn ok" onclick="approve(${r.id})">확인 후 승인</button>
+          <button class="obtn" onclick="reject(${r.id})">수동 처리로 전환</button>
+        </div>
+      </div>`).join('')
+      : '<div class="empty-review">검수 대기 건이 없습니다 — 전부 자동 처리되었습니다 ✓</div>';
+  }
+  window.approve = id => {
+    const i = pendingReviews.findIndex(r => r.id === id);
+    if (i < 0) return;
+    addLog(`PO-${id} 검수 승인 → ERP 기록 완료 (구매팀 김대리)`, 'ok');
+    pendingReviews.splice(i, 1);
+    renderReviews();
+  };
+  window.reject = id => {
+    const i = pendingReviews.findIndex(r => r.id === id);
+    if (i < 0) return;
+    addLog(`PO-${id} 수동 처리 전환 — 원문 담당자 전달`, 'warn');
+    pendingReviews.splice(i, 1);
+    renderReviews();
+  };
+
+  const WHYS = ['단가 표기 모호 (₩/개 vs ₩/박스)','납기일 두 곳 상충','품목 코드 미등록 신규 품목','수량 단위 불명확 (EA/SET)'];
+
+  function newDoc() {
+    seq++; total++;
+    const sender = SENDERS[Math.floor(Math.random()*SENDERS.length)];
+    const items = ITEMS[Math.floor(Math.random()*ITEMS.length)];
+    const isLow = Math.random() < 0.16;
+    const conf = isLow ? (78 + Math.floor(Math.random()*11)) : (91 + Math.floor(Math.random()*9));
+    const id = seq;
+
+    const row = document.createElement('tr');
+    row.className = 'new-row';
+    row.innerHTML = `
+      <td class="doc-id">PO-${id}</td><td class="src">${sender}</td><td>${items}</td>
+      <td class="conf ${isLow?'lo':'hi'}">${conf}%</td>
+      <td><span class="st proc">AI 추출 중</span></td>`;
+    feed.prepend(row);
+    while (feed.children.length > 9) feed.lastChild.remove();
+    addLog(`PO-${id} 수신 (${sender}) — 추출 시작`);
+
+    setTimeout(() => {
+      const st = row.querySelector('.st');
+      if (isLow) {
+        st.className = 'st review'; st.textContent = '검수 대기';
+        pendingReviews.unshift({ id, sender, items, conf, why: WHYS[Math.floor(Math.random()*WHYS.length)] });
+        if (pendingReviews.length > 4) pendingReviews.pop();
+        renderReviews();
+        addLog(`PO-${id} 확신도 ${conf}% < 90% → 검수함 이동`, 'warn');
+      } else {
+        st.className = 'st done'; st.textContent = 'ERP 기록 완료';
+        autoCount++;
+        addLog(`PO-${id} ERP 자동 기록 완료 (${(6+Math.random()*4).toFixed(1)}초)`, 'ok');
+      }
+      document.getElementById('kTotal').innerHTML = total + '<small> 건</small>';
+      document.getElementById('kAuto').innerHTML = (autoCount/total*100).toFixed(1) + '<small> %</small>';
+    }, 1400 + Math.random()*1200);
+  }
+
+  // 초기 상태
+  [['2846','동아스틸 영업부',4,97],['2845','대성철강 구매팀',2,95],
+   ['2844','태광기공',6,93],['2843','유진파이프',1,99],['2842','한빛산업 자재과',3,96]]
+    .forEach(([id,sender,items,conf]) => {
+      feed.insertAdjacentHTML('beforeend', `
+        <tr><td class="doc-id">PO-${id}</td><td class="src">${sender}</td><td>${items}</td>
+        <td class="conf hi">${conf}%</td><td><span class="st done">ERP 기록 완료</span></td></tr>`);
+    });
+  pendingReviews.push(
+    { id: 2841, sender: '신일밸브 구매과', items: 5, conf: 84, why: WHYS[2] },
+    { id: 2838, sender: '금호테크 발주담당', items: 2, conf: 88, why: WHYS[0] });
+  renderReviews();
+  addLog('파이프라인 정상 가동 — 메일함 감시 중', 'ok');
+
+  setInterval(newDoc, 5200);
+  setTimeout(newDoc, 1200);
+</script>
+</body>
+</html>

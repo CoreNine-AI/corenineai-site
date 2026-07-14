@@ -1,0 +1,596 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>주간보고 자동 생성 · CoreNine AI</title>
+<style>
+  :root{
+    --bg:#F7F8FB; --card:#ffffff; --text:#1A1F2E; --point:#3B5BFF;
+    --sub:#6B7280; --success:#0BA678; --border:#E6E8EE; --soft:#F1F3F8;
+  }
+  [data-mode="dark"]{
+    --bg:#0E1220; --card:#171C2C; --text:#E8EAF0; --point:#5B76FF;
+    --sub:#98A0B3; --success:#22C79E; --border:#262E44; --soft:#1E2436;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,"Segoe UI","Malgun Gothic",sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.6;
+    -webkit-font-smoothing:antialiased; transition:background .25s,color .25s;
+  }
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 28px; background:var(--card); border-bottom:1px solid var(--border);
+    position:sticky; top:0; z-index:10;
+  }
+  .brand{display:flex; align-items:baseline; gap:12px}
+  .logo{font-weight:800; font-size:22px; letter-spacing:-.5px; color:var(--point)}
+  .tagline{font-size:13px; color:var(--sub)}
+  .mode-toggle{
+    border:1px solid var(--border); background:var(--soft); color:var(--text);
+    border-radius:20px; padding:7px 14px; font-size:13px; cursor:pointer;
+    display:flex; align-items:center; gap:6px; font-family:inherit;
+  }
+  .mode-toggle:hover{border-color:var(--point)}
+  .wrap{max-width:1240px; margin:0 auto; padding:24px 20px 60px}
+  .intro{margin:8px 0 20px}
+  .intro h1{font-size:22px; margin:0 0 6px; letter-spacing:-.5px}
+  .intro p{margin:0; color:var(--sub); font-size:14px}
+
+  .livebar{
+    display:none; margin:0 0 18px; padding:14px 16px; background:var(--card);
+    border:1px solid var(--border); border-radius:12px; gap:10px; align-items:center; flex-wrap:wrap;
+  }
+  .livebar.on{display:flex}
+  .livebar input{
+    flex:1; min-width:220px; padding:9px 12px; border:1px solid var(--border);
+    border-radius:8px; font-family:inherit; font-size:13px; background:var(--bg); color:var(--text);
+  }
+  .livebar .hint{font-size:12px; color:var(--sub); width:100%}
+  .btn{
+    border:none; border-radius:8px; padding:9px 16px; font-size:13.5px; font-weight:600;
+    cursor:pointer; font-family:inherit; transition:opacity .15s, transform .05s;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--point); color:#fff}
+  .btn-ghost{background:var(--soft); color:var(--text); border:1px solid var(--border)}
+  .btn-save{background:var(--success); color:#fff}
+  .btn:disabled{opacity:.5; cursor:not-allowed}
+
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:20px}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  .card{
+    background:var(--card); border:1px solid var(--border); border-radius:12px;
+    padding:20px; box-shadow:0 1px 3px rgba(20,25,45,.04),0 6px 18px rgba(20,25,45,.03);
+  }
+  .card h2{font-size:15px; margin:0 0 4px; letter-spacing:-.3px}
+  .card .desc{font-size:12.5px; color:var(--sub); margin:0 0 14px}
+  .label-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px}
+
+  textarea{
+    width:100%; min-height:220px; resize:vertical; padding:14px; border:1px solid var(--border);
+    border-radius:10px; font-family:inherit; font-size:14px; line-height:1.7; background:var(--bg);
+    color:var(--text);
+  }
+  textarea:focus{outline:none; border-color:var(--point)}
+
+  .options{margin-top:16px; display:flex; flex-direction:column; gap:12px}
+  .opt-group{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+  .opt-group > span{font-size:12.5px; color:var(--sub); width:64px; flex-shrink:0}
+  .seg{display:inline-flex; background:var(--soft); border:1px solid var(--border); border-radius:8px; padding:3px}
+  .seg button{
+    border:none; background:transparent; color:var(--sub); font-family:inherit;
+    font-size:13px; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:500;
+  }
+  .seg button.active{background:var(--card); color:var(--point); font-weight:700; box-shadow:0 1px 2px rgba(0,0,0,.06)}
+
+  .gen-row{margin-top:18px; display:flex; align-items:center; gap:12px}
+  .gen-row .btn-primary{padding:11px 22px; font-size:14px}
+
+  /* report side */
+  .report-area{position:relative; min-height:340px}
+  .placeholder{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    height:340px; color:var(--sub); text-align:center; gap:10px;
+  }
+  .placeholder .big{font-size:40px; opacity:.35}
+  .report{
+    white-space:pre-wrap; font-size:14px; line-height:1.85; min-height:340px;
+    font-family:inherit; letter-spacing:-.2px;
+  }
+  .report .rtitle{font-size:16.5px; font-weight:800; display:block; margin-bottom:14px; letter-spacing:-.4px}
+  .report .sec{color:var(--point); font-weight:800; display:inline-block; margin-top:6px}
+  .loading{
+    display:flex; align-items:center; gap:12px; color:var(--sub); height:340px; justify-content:center;
+  }
+  .spinner{
+    width:22px; height:22px; border:3px solid var(--border); border-top-color:var(--point);
+    border-radius:50%; animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .cursor{display:inline-block; width:8px; background:var(--point); animation:blink 1s step-start infinite; margin-left:1px}
+  @keyframes blink{50%{opacity:0}}
+
+  .report-foot{
+    margin-top:18px; display:none; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    border-top:1px solid var(--border); padding-top:14px;
+  }
+  .report-foot.on{display:flex}
+  .metric{font-size:12.5px; color:var(--sub)}
+  .metric b{color:var(--success)}
+
+  .notice{
+    background:var(--soft); border:1px dashed var(--point); border-radius:10px; padding:16px;
+    font-size:13.5px; color:var(--text); line-height:1.7;
+  }
+  .notice b{color:var(--point)}
+
+  .toast{
+    position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--text); color:var(--bg); padding:11px 20px; border-radius:24px; font-size:13.5px;
+    opacity:0; pointer-events:none; transition:all .3s; z-index:50; font-weight:600;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+  footer{text-align:center; color:var(--sub); font-size:12px; padding:26px 20px; border-top:1px solid var(--border); margin-top:20px}
+  .badge{display:inline-block; font-size:11px; background:var(--soft); border:1px solid var(--border); color:var(--sub); border-radius:20px; padding:3px 10px; margin-left:8px}
+  .badge.live{color:var(--success); border-color:var(--success)}
+</style>
+
+<header>
+  <div class="brand">
+    <span class="logo">CoreNine AI</span>
+    <span class="tagline">AI 업무 자동화 데모</span>
+  </div>
+  <button class="mode-toggle" id="modeBtn">🌙 다크 모드</button>
+</header>
+
+<div class="wrap">
+  <div class="intro">
+    <h1>메모 몇 줄 → 상사에게 보낼 주간보고서 <span class="badge" id="modeBadge">시뮬레이션 모드</span></h1>
+    <p>대충 흘려 쓴 메모를 붙여넣으면, 격식 있는 개조식 주간업무보고서로 자동 정리됩니다. 평균 작성 40분이 30초로.</p>
+  </div>
+
+  <div class="livebar" id="livebar">
+    <input type="password" id="apiKey" placeholder="Anthropic API 키 (sk-ant-...) — 브라우저 localStorage에만 저장됩니다">
+    <button class="btn btn-save" id="saveKey">키 저장</button>
+    <button class="btn btn-ghost" id="clearKey">키 삭제</button>
+    <span class="hint">라이브 모드에서는 입력하신 임의의 메모로 실제 Claude API를 호출해 보고서를 생성합니다. 키는 서버로 전송되지 않고 브라우저에만 저장됩니다.</span>
+  </div>
+
+  <div class="grid">
+    <!-- LEFT -->
+    <div class="card">
+      <div class="label-row">
+        <div>
+          <h2>이번 주 한 일 메모</h2>
+          <p class="desc">형식 신경 쓰지 말고, 생각나는 대로 적어두세요.</p>
+        </div>
+        <button class="btn btn-ghost" id="loadSample">샘플 메모 불러오기</button>
+      </div>
+      <textarea id="memo" placeholder="예) 화요일 대한상사 미팅 갔음 견적 다시 달라함
+B사 납품 또 지연... 물류쪽 문제인듯
+신규리드 2건 소개받음 근데 하나는 가망없어보임
+다음주 전시회 준비 부스 아직 미정
+회의 너무 많아서 실무 할 시간이 없었음"></textarea>
+
+      <div class="options">
+        <div class="opt-group">
+          <span>톤</span>
+          <div class="seg" data-opt="tone">
+            <button data-val="concise" class="active">간결하게</button>
+            <button data-val="detailed">상세하게</button>
+          </div>
+        </div>
+        <div class="opt-group">
+          <span>형식</span>
+          <div class="seg" data-opt="format">
+            <button data-val="report" class="active">개조식 보고서</button>
+            <button data-val="email">이메일 형식</button>
+          </div>
+        </div>
+        <div class="opt-group">
+          <span>받는 사람</span>
+          <div class="seg" data-opt="recipient">
+            <button data-val="lead" class="active">팀장님</button>
+            <button data-val="ceo">대표님</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="gen-row">
+        <button class="btn btn-primary" id="genBtn">보고서 생성</button>
+        <span class="metric">지저분한 메모 → 격식 있는 보고서</span>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="card">
+      <div class="label-row">
+        <div>
+          <h2>완성된 주간업무보고</h2>
+          <p class="desc" id="rDesc">생성 버튼을 누르면 여기에 정리됩니다.</p>
+        </div>
+      </div>
+      <div class="report-area" id="reportArea">
+        <div class="placeholder" id="placeholder">
+          <div class="big">📄</div>
+          <div>왼쪽 메모를 입력하고 <b>보고서 생성</b>을 눌러보세요.</div>
+        </div>
+      </div>
+      <div class="report-foot" id="reportFoot">
+        <span class="metric">평균 작성 시간 <b>40분 → 30초</b></span>
+        <button class="btn btn-ghost" id="copyBtn">복사하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>본 데모는 시연용 샘플 데이터로 동작합니다 · CoreNine AI</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- state ----------
+  var state = { tone:"concise", format:"report", recipient:"lead", live:false, lastText:"" };
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  // ---------- dark mode ----------
+  var modeBtn = $("modeBtn");
+  modeBtn.addEventListener("click", function(){
+    var dark = document.body.getAttribute("data-mode")==="dark";
+    document.body.setAttribute("data-mode", dark?"light":"dark");
+    modeBtn.textContent = dark ? "🌙 다크 모드" : "☀️ 라이트 모드";
+  });
+
+  // ---------- segmented options ----------
+  document.querySelectorAll(".seg").forEach(function(seg){
+    var key = seg.getAttribute("data-opt");
+    seg.querySelectorAll("button").forEach(function(b){
+      b.addEventListener("click", function(){
+        seg.querySelectorAll("button").forEach(function(x){ x.classList.remove("active"); });
+        b.classList.add("active");
+        state[key] = b.getAttribute("data-val");
+      });
+    });
+  });
+
+  // ---------- sample memo ----------
+  var SAMPLE = "화요일 대한상사 미팅 갔는데 견적 다시 달라함 단가 좀 세다는 반응\n" +
+    "B사 납품 또 지연됨 물류쪽 문제라는데 담주까지 못맞추면 컴플레인 각\n" +
+    "신규리드 2건 소개받음 하나는 규모 괜찮고 하나는 예산없어서 가망없음\n" +
+    "다음주 전시회 준비해야하는데 부스 위치 아직도 미정 담당자 연락 안됨\n" +
+    "수요일 내부회의 너무 많았음 실무 할 시간이 없었음\n" +
+    "지난달 제안했던 C프로젝트 계약서 검토중 담주 사인 예정\n" +
+    "경비처리 영수증 아직 안냄 이번주 안에 해야함";
+
+  $("loadSample").addEventListener("click", function(){
+    $("memo").value = SAMPLE;
+    toast("샘플 영업팀 메모를 불러왔습니다");
+  });
+
+  // ---------- toast ----------
+  var toastEl = $("toast"), toastTimer;
+  function toast(msg){
+    toastEl.textContent = msg; toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 2200);
+  }
+
+  // ---------- week label (JS 계산) ----------
+  function weekLabel(){
+    var d = new Date();
+    var y = d.getFullYear(), m = d.getMonth()+1;
+    // 이번 달 1일이 속한 주를 1주차로, 주 시작은 월요일 기준
+    var first = new Date(y, d.getMonth(), 1);
+    var offset = (first.getDay()+6)%7; // 월=0
+    var week = Math.floor((d.getDate()+offset-1)/7)+1;
+    return y+"년 "+m+"월 "+week+"주차 주간업무보고";
+  }
+  function recipientName(){ return state.recipient==="ceo" ? "대표님" : "팀장님"; }
+  function senderTitle(){ return state.recipient==="ceo" ? "팀장" : "담당자"; }
+
+  // ---------- 시뮬레이션: 입력 메모를 실제로 분석하는 규칙 엔진 ----------
+  // 메모의 각 줄을 패턴 매칭으로 4개 섹션에 분류하고, 회사명·프로젝트명·건수 등
+  // 실제 입력에서 뽑은 엔티티를 문장 템플릿에 채운다. (입력을 바꾸면 결과도 바뀐다)
+
+  function pickCompany(line){
+    var m = line.match(/([가-힣A-Za-z0-9]{1,8}(?:상사|금속|산업|스틸|물산|테크|기공|정공|건설|무역))/);
+    if(m) return m[1];
+    m = line.match(/([A-Za-z가-힣0-9]{1,6})사(?=\s|납품|는|가|와|의|$)/);
+    if(m) return m[1]+"사";
+    return null;
+  }
+  function cleanLine(line){
+    return line.replace(/[ㅠㅜㅋ~!.]+/g," ").replace(/\s+/g," ").trim()
+      .replace(/(했음|했다|했음요|함|됨|임|음|다)$/,"");
+  }
+
+  // 규칙: re 매칭 시 각 섹션에 문장 추가. c=간결, d=상세. {C}=회사, {P}=프로젝트, {N}=건수
+  var RULES = [
+    { re:/(미팅|방문|만남).*(견적|단가)|(견적|단가).*(미팅|방문)/,
+      make:function(line){
+        var C = pickCompany(line) || "고객사";
+        var r = { done:{
+          c:C+" 미팅 진행: 견적 재요청 접수"+(/(세다|비싸|부담|저항)/.test(line)?"(단가 저항 있어 조정안 검토 중)":""),
+          d:C+" 대면 미팅을 진행하였습니다. "+(/(세다|비싸|부담|저항)/.test(line)
+            ?"제출 견적에 대해 단가 부담 의견이 있어 재견적 요청을 접수하였으며, 현재 조정안을 검토 중입니다."
+            :"견적 재요청을 접수하여 검토 중입니다.")},
+          plan:{ c:C+" 조정 견적 재발송 및 후속 미팅", d:C+" 조정 견적을 재발송하고 후속 미팅을 통해 수주 가능성을 높이겠습니다."} };
+        return r;
+      }},
+    { re:/납품.*(지연|늦|밀리)|(지연|늦어).*납품/,
+      make:function(line){
+        var C = pickCompany(line) || "거래처";
+        var why = /물류/.test(line) ? "물류 이슈로 " : "";
+        var risk = /(컴플레인|불만|클레임)/.test(line) ? ", 미충족 시 고객 불만 발생 우려" : "";
+        return { issue:{ c:C+" 납품 지연: "+why+"일정 지연"+risk,
+                         d:C+" 납품이 "+(why||"프로세스 문제로 ")+"지연되고 있습니다"+(risk?". 일정 미충족 시 고객 클레임으로 이어질 수 있어 선제 대응이 필요합니다":"")+"." },
+                 coop:{ c:C+" 납품 지연 관련 "+(/물류/.test(line)?"물류팀":"유관 부서")+" 협조 요청",
+                        d:C+" 납품 지연 해소를 위한 "+(/물류/.test(line)?"물류팀":"유관 부서")+"의 우선 협조를 요청드립니다." } };
+      }},
+    { re:/(신규\s*리드|리드).*(\d+)\s*건|(\d+)\s*건.*(리드|소개받)/,
+      make:function(line){
+        var n = (line.match(/(\d+)\s*건/)||[])[1] || "복수";
+        var split = /(가망없|예산없|안될)/.test(line);
+        return { done:{ c:"신규 리드 "+n+"건 확보"+(split?": 일부는 유효 상담 진행, 일부는 예산 여건상 우선순위 조정 예정":""),
+                        d:"신규 영업 리드 "+n+"건을 확보하였습니다."+(split?" 일부는 유효 상담으로 진행 중이며, 예산 여건이 맞지 않는 건은 우선순위 조정 후 재접촉 예정입니다.":"") } };
+      }},
+    { re:/([가-힣A-Za-z0-9]{1,12})\s*프로젝트.*(계약|사인|체결|검토)/,
+      make:function(line){
+        var P = (line.match(/([가-힣A-Za-z0-9]{1,12})\s*프로젝트/)||[])[1] || "";
+        var name = P ? P+"프로젝트" : "프로젝트";
+        var soon = /(담주|다음\s*주|차주)/.test(line);
+        return { done:{ c:name+" 계약 진행: 계약서 검토 "+(soon?"완료 단계, 차주 체결 예정":"진행 중"),
+                        d:name+" 계약서 검토가 "+(soon?"마무리 단계이며, 차주 중 정식 체결이 예상됩니다":"진행 중입니다")+"." },
+                 plan:{ c:name+" 계약 체결 마무리", d:name+" 계약 체결을 완료하고 착수 일정을 협의하겠습니다." } };
+      }},
+    { re:/전시회|부스/,
+      make:function(line){
+        var stuck = /(미정|연락\s*안|안\s*됨|안됨)/.test(line);
+        var r = { plan:{ c:"전시회 부스 "+(stuck?"위치 확정 및 ":"")+"준비 착수",
+                         d:"전시회 부스 "+(stuck?"위치를 확정하고 ":"")+"부스 구성 및 준비에 착수하겠습니다." } };
+        if(stuck) r.coop = { c:"전시회 부스 담당자 연결 지원 요청", d:"전시회 부스 배정 담당자와의 연결에 대한 지원을 요청드립니다." };
+        return r;
+      }},
+    { re:/회의.*(많|과다|너무)/,
+      make:function(){
+        return { issue:{ c:"내부 회의 과다로 실무 집중 시간 부족",
+                         d:"내부 회의 비중이 높아 실무 집중 시간이 부족했습니다. 회의 효율화가 필요합니다." } };
+      }},
+    { re:/경비|영수증|정산/,
+      make:function(line){
+        return { plan:{ c:"경비 영수증 정산 금주 내 완료", d:"미처리된 경비 영수증 정산을 금주 내 완료하겠습니다." } };
+      }}
+  ];
+
+  // 어느 규칙에도 안 걸린 줄: 키워드로 섹션만 정하고 문장을 다듬어 수록
+  function fallbackClassify(line){
+    var t = cleanLine(line);
+    if(!t) return null;
+    if(/(지연|문제|이슈|불만|클레임|부족|누락|없었)/.test(line)) return { sec:"issue", text:t };
+    if(/(다음\s*주|담주|차주|예정|해야|계획|준비)/.test(line))   return { sec:"plan",  text:t };
+    if(/(요청|협조|지원|부탁)/.test(line))                        return { sec:"coop",  text:t };
+    return { sec:"done", text:t };
+  }
+
+  function analyzeMemo(memo, tone){
+    var S = { done:[], issue:[], plan:[], coop:[] };
+    var key = tone==="detailed" ? "d" : "c";
+    memo.split(/\n+/).forEach(function(raw){
+      var line = raw.trim();
+      if(!line) return;
+      var hit = false;
+      for(var i=0;i<RULES.length;i++){
+        if(RULES[i].re.test(line)){
+          var out = RULES[i].make(line);
+          if(out.done)  S.done.push(out.done[key]);
+          if(out.issue) S.issue.push(out.issue[key]);
+          if(out.plan)  S.plan.push(out.plan[key]);
+          if(out.coop)  S.coop.push(out.coop[key]);
+          hit = true; break;
+        }
+      }
+      if(!hit){
+        var f = fallbackClassify(line);
+        if(f) S[f.sec].push(f.text);
+      }
+    });
+    return S;
+  }
+
+  function sectionBlock(title, items){
+    if(!items.length) return "";
+    return "■ "+title+"\n"+items.map(function(x){ return " - "+x; }).join("\n")+"\n\n";
+  }
+
+  function buildSimFromMemo(memo){
+    var S = analyzeMemo(memo, state.tone);
+    var body =
+      sectionBlock("금주 주요 실적", S.done)+
+      sectionBlock("이슈 및 리스크", S.issue)+
+      sectionBlock("차주 계획", S.plan)+
+      sectionBlock("협조 요청 사항", S.coop);
+    body = body.replace(/\n+$/,"");
+    var title = weekLabel();
+    if(state.format==="email"){
+      return "제목: [주간보고] "+title+"\n\n"+recipientName()+", 안녕하십니까. 금주 업무 내용을 아래와 같이 보고드립니다.\n\n"+body+"\n\n감사합니다.";
+    }
+    return title+"\n\n"+body;
+  }
+
+  // ---------- render with typing effect ----------
+  var reportArea = $("reportArea"), reportFoot = $("reportFoot"), placeholder = $("placeholder");
+  var typingTimer = null;
+
+  function escapeHtml(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+  function formatReportHtml(text, upto){
+    var shown = text.slice(0, upto);
+    var html = escapeHtml(shown);
+    // 섹션 헤더 강조
+    html = html.replace(/(■ [^\n]+)/g, '<span class="sec">$1</span>');
+    // 첫 줄 제목 강조 (보고서 형식일 때)
+    return html;
+  }
+
+  function showLoading(){
+    placeholder.style.display="none";
+    reportFoot.classList.remove("on");
+    reportArea.innerHTML = '<div class="loading"><div class="spinner"></div><span>보고서 작성 중...</span></div>';
+    $("rDesc").textContent = "AI가 메모를 분석해 섹션별로 정리하고 있습니다.";
+  }
+
+  function typeOut(text){
+    state.lastText = text;
+    var i = 0, step = Math.max(2, Math.round(text.length/220));
+    reportArea.innerHTML = '<div class="report" id="reportBody"></div>';
+    var body = $("reportBody");
+    if(typingTimer) clearInterval(typingTimer);
+    typingTimer = setInterval(function(){
+      i += step;
+      if(i >= text.length){ i = text.length; }
+      body.innerHTML = formatReportHtml(text, i) + (i<text.length?'<span class="cursor">&nbsp;</span>':'');
+      if(i >= text.length){
+        clearInterval(typingTimer);
+        body.innerHTML = formatReportHtml(text, text.length);
+        reportFoot.classList.add("on");
+        $("rDesc").textContent = "메모의 흩어진 정보가 4개 섹션으로 자동 분류되었습니다.";
+      }
+    }, 16);
+  }
+
+  // ---------- generate ----------
+  $("genBtn").addEventListener("click", function(){
+    var memo = $("memo").value.trim();
+    if(!memo){ toast("먼저 메모를 입력하거나 샘플을 불러오세요"); return; }
+
+    if(state.live){
+      generateLive(memo);
+      return;
+    }
+
+    // 시뮬레이션 모드: 입력 메모를 규칙 엔진이 직접 분석해 생성
+    showLoading();
+    setTimeout(function(){ typeOut(buildSimFromMemo(memo)); }, 1200);
+  });
+
+  // ---------- copy ----------
+  $("copyBtn").addEventListener("click", function(){
+    var text = state.lastText || "";
+    if(!text){ return; }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ toast("보고서가 복사되었습니다"); },
+        function(){ fallbackCopy(text); });
+    } else { fallbackCopy(text); }
+  });
+  function fallbackCopy(text){
+    var ta=document.createElement("textarea"); ta.value=text;
+    ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta);
+    ta.select();
+    try{ document.execCommand("copy"); toast("보고서가 복사되었습니다"); }catch(e){ toast("복사에 실패했습니다"); }
+    document.body.removeChild(ta);
+  }
+
+  // ---------- live mode ----------
+  var livebar = $("livebar"), modeBadge = $("modeBadge");
+  var LIVE_KEY = "cloudzero_live_mode", API_KEY = "cloudzero_api_key";
+
+  function refreshMode(){
+    if(state.live){
+      livebar.classList.add("on");
+      modeBadge.textContent = "라이브 모드";
+      modeBadge.classList.add("live");
+    } else {
+      livebar.classList.remove("on");
+      modeBadge.textContent = "시뮬레이션 모드";
+      modeBadge.classList.remove("live");
+    }
+  }
+
+  // 모드 배지 클릭으로 토글
+  modeBadge.style.cursor = "pointer";
+  modeBadge.title = "클릭하여 시뮬레이션 / 라이브 모드 전환";
+  modeBadge.addEventListener("click", function(){
+    state.live = !state.live;
+    try{ localStorage.setItem(LIVE_KEY, state.live?"1":"0"); }catch(e){}
+    refreshMode();
+    toast(state.live ? "라이브 모드로 전환되었습니다" : "시뮬레이션 모드로 전환되었습니다");
+  });
+
+  $("saveKey").addEventListener("click", function(){
+    var k = $("apiKey").value.trim();
+    if(!k){ toast("API 키를 입력하세요"); return; }
+    try{ localStorage.setItem(API_KEY, k); }catch(e){}
+    toast("API 키가 저장되었습니다");
+  });
+  $("clearKey").addEventListener("click", function(){
+    try{ localStorage.removeItem(API_KEY); }catch(e){}
+    $("apiKey").value="";
+    toast("API 키가 삭제되었습니다");
+  });
+
+  function loadSaved(){
+    try{
+      state.live = localStorage.getItem(LIVE_KEY)==="1";
+      var k = localStorage.getItem(API_KEY);
+      if(k){ $("apiKey").value = k; }
+    }catch(e){}
+    refreshMode();
+  }
+
+  function toneKo(){ return state.tone==="detailed" ? "상세하고 구체적으로" : "간결하고 핵심 위주로"; }
+  function formatKo(){ return state.format==="email" ? "이메일 형식(제목 포함, 인사말과 맺음말 포함)" : "개조식 보고서 형식(■ 섹션 헤더 + 하위 항목)"; }
+
+  function generateLive(memo){
+    var key = "";
+    try{ key = localStorage.getItem(API_KEY) || $("apiKey").value.trim(); }catch(e){ key = $("apiKey").value.trim(); }
+    if(!key){ toast("API 키를 먼저 입력/저장하세요"); return; }
+    showLoading();
+
+    var sys = "당신은 한국 기업의 주간업무보고서 작성을 돕는 전문 비서입니다. "+
+      "직원이 대충 작성한 메모를 받아 격식 있는 한국식 주간업무보고서로 정리합니다.\n"+
+      "규칙:\n"+
+      "- 제목은 '"+weekLabel()+"' 를 사용합니다.\n"+
+      "- 반드시 다음 4개 섹션으로 분류합니다: ■ 금주 주요 실적 / ■ 이슈 및 리스크 / ■ 차주 계획 / ■ 협조 요청 사항\n"+
+      "- 메모의 흩어진 정보를 각 섹션에 올바르게 분류합니다.\n"+
+      "- '가망없음', '망함' 같은 부적절/부정적 표현은 '우선순위 조정 예정' 등 격식 있는 표현으로 순화합니다.\n"+
+      "- 구어체와 오타를 격식 있는 개조식 문장으로 바꿉니다.\n"+
+      "- 톤: "+toneKo()+". 형식: "+formatKo()+".\n"+
+      "- 받는 사람은 '"+recipientName()+"' 입니다. 호칭을 반영하세요.\n"+
+      "- 보고서 본문만 출력하고 부연 설명은 하지 마세요.";
+
+    fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST",
+      headers:{
+        "content-type":"application/json",
+        "x-api-key":key,
+        "anthropic-version":"2023-06-01",
+        "anthropic-dangerous-direct-browser-access":"true"
+      },
+      body: JSON.stringify({
+        model:"claude-sonnet-5",
+        max_tokens:1500,
+        system: sys,
+        messages:[{role:"user", content:"다음은 이번 주 업무 메모입니다. 주간업무보고서로 정리해 주세요.\n\n"+memo}]
+      })
+    }).then(function(r){ return r.json(); }).then(function(data){
+      if(data && data.content && data.content[0] && data.content[0].text){
+        typeOut(data.content[0].text.trim());
+      } else {
+        var msg = (data && data.error && data.error.message) ? data.error.message : "응답을 가져오지 못했습니다.";
+        reportArea.innerHTML = '<div class="notice"><b>API 호출 오류</b><br>'+escapeHtml(msg)+'<br><br>키가 올바른지 확인해 주세요. 시뮬레이션 모드로도 데모를 보실 수 있습니다.</div>';
+        $("rDesc").textContent = "오류가 발생했습니다.";
+      }
+    }).catch(function(err){
+      reportArea.innerHTML = '<div class="notice"><b>네트워크 오류</b><br>'+escapeHtml(String(err))+'<br><br>인터넷 연결 또는 CORS 설정을 확인해 주세요. 시뮬레이션 모드로도 데모를 보실 수 있습니다.</div>';
+      $("rDesc").textContent = "오류가 발생했습니다.";
+    });
+  }
+
+  // ---------- init ----------
+  loadSaved();
+})();
+</script>
