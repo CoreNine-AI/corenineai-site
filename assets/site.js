@@ -7,12 +7,12 @@
   const PHONE = '010-6571-4281';
 
   // 심볼: 픽셀 C9 (11x11 블록, rx2). 9의 마지막 픽셀이 액센트로 반전 — "살아있는 비트".
-  // tone="dark"면 어두운 배경용(화이트 + 민트 픽셀).
+  // tone="dark"면 어두운 배경용(시안 C + 화이트 9 + 시안 픽셀).
   function logoSvg(tone) {
     const dark = tone === 'dark';
-    const cFill = dark ? '#ffffff' : '#111111';
-    const nFill = dark ? '#ffffff' : '#1e4fd8';
-    const accent = dark ? '#9be7d8' : '#1e4fd8';
+    const cFill = dark ? '#43dcff' : '#111111';
+    const nFill = dark ? '#ffffff' : '#0ab8dd';
+    const accent = dark ? '#43dcff' : '#0ab8dd';
     const C = [[0,0],[13,0],[26,0],[0,13],[0,26],[0,39],[0,52],[13,52],[26,52]];
     const N = [[52,0],[65,0],[78,0],[91,0],[52,13],[91,13],[52,26],[65,26],[78,26],[91,26],[91,39]];
     const px = (x, y, f) => `<rect x="${x}" y="${y}" width="11" height="11" rx="2" fill="${f}"/>`;

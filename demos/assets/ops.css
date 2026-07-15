@@ -3,10 +3,10 @@
    demo4_* 페이지들이 공유한다. 페이지 고유 스타일만 각 파일에 둔다.
    ============================================================ */
 :root{
-  --brand:#1e4fd8;--brand-strong:#1e4fd8;--brand-soft:#e3eafc;--lime:#9be7d8;
+  --brand:#0ab8dd;--brand-strong:#0ab8dd;--brand-soft:#d9f5fc;--lime:#43dcff;
   --ink:#0D1B2A;--sub:#46566A;--mute:#8593A6;--line:#E4E9F0;--bg:#F2F5F8;
   --red:#E5484D;--red-soft:#FDEBEC;--amber:#B7791F;--amber-soft:#FDF3E0;
-  --blue:#1D6FD6;--blue-soft:#EAF3FF;
+  --blue:#0891B0;--blue-soft:#D9F5FC;
   --sans:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Segoe UI','Malgun Gothic',sans-serif;
   --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
 }
@@ -57,7 +57,7 @@ main{padding:24px 28px 40px;max-width:1200px}
 /* KPI */
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:20px}
 .kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;position:relative;overflow:hidden}
-.kpi::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#1e4fd8,#1e4fd8)}
+.kpi::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#0ab8dd,#0ab8dd)}
 .kpi .k{font-size:12px;font-weight:700;color:var(--mute)}
 .kpi .v{font-size:27px;font-weight:800;letter-spacing:-.03em;margin-top:6px;font-variant-numeric:tabular-nums}
 .kpi .v small{font-size:13px;font-weight:700;color:var(--mute)}

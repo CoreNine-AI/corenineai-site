@@ -20,10 +20,10 @@
     --bg:#F7F8FB;
     --card:#ffffff;
     --text:#1A1F2E;
-    --point:#3B5BFF;
-    --point-soft:#EAEEFF;
+    --point:#0AB8DD;
+    --point-soft:#D9F5FC;
     --sub:#6B7280;
-    --success:#1e4fd8;
+    --success:#0ab8dd;
     --border:#E6E8EF;
     --radius:12px;
     --shadow:0 1px 2px rgba(16,24,40,.04), 0 8px 24px rgba(16,24,40,.06);
@@ -65,10 +65,10 @@
   .toggle .knob{
     position:absolute;top:3px;left:3px;width:calc(50% - 3px);height:calc(100% - 6px);
     background:var(--point);border-radius:999px;transition:transform .22s cubic-bezier(.4,0,.2,1);
-    box-shadow:0 1px 3px rgba(59,91,255,.4);
+    box-shadow:0 1px 3px rgba(10,184,221,.4);
   }
   .toggle.live .knob{transform:translateX(100%);}
-  .toggle.live .knob{background:var(--success);box-shadow:0 1px 3px rgba(30,79,216,.4);}
+  .toggle.live .knob{background:var(--success);box-shadow:0 1px 3px rgba(10,184,221,.4);}
 
   /* Layout */
   .layout{display:flex;gap:20px;padding:20px 28px;max-width:1440px;margin:0 auto;align-items:stretch;min-height:calc(100vh - 130px);}
@@ -90,7 +90,7 @@
     transition:border-color .15s, box-shadow .15s, transform .05s;background:#fff;
     display:flex;align-items:flex-start;gap:11px;
   }
-  .doc-card:hover{border-color:var(--point);box-shadow:0 2px 10px rgba(59,91,255,.08);}
+  .doc-card:hover{border-color:var(--point);box-shadow:0 2px 10px rgba(10,184,221,.08);}
   .doc-card:active{transform:translateY(1px);}
   .doc-ico{
     flex:0 0 36px;height:36px;border-radius:9px;background:var(--point-soft);
@@ -130,9 +130,9 @@
   .cite{
     display:inline-flex;align-items:center;gap:5px;margin-top:9px;padding:4px 9px;
     background:var(--point-soft);color:var(--point);border-radius:999px;font-size:11.5px;font-weight:600;
-    cursor:pointer;border:1px solid rgba(59,91,255,.15);
+    cursor:pointer;border:1px solid rgba(10,184,221,.15);
   }
-  .cite:hover{background:#dfe6ff;}
+  .cite:hover{background:#c7eef9;}
 
   .typing{display:inline-flex;gap:4px;align-items:center;color:var(--sub);font-size:12.5px;}
   .typing .dots{display:inline-flex;gap:3px;}
@@ -156,7 +156,7 @@
     flex:1;border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:14px;
     outline:none;transition:border-color .15s;background:#fff;color:var(--text);
   }
-  .composer input[type=text]:focus{border-color:var(--point);box-shadow:0 0 0 3px rgba(59,91,255,.1);}
+  .composer input[type=text]:focus{border-color:var(--point);box-shadow:0 0 0 3px rgba(10,184,221,.1);}
   .send{
     border:none;background:var(--point);color:#fff;border-radius:10px;padding:0 20px;
     font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;
