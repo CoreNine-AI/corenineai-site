@@ -10,24 +10,24 @@
 <meta property="og:title" content="CoreNine AI — Work in Motion">
 <meta property="og:description" content="AI education and workflow automation, rendered as a 30,000-point particle field.">
 <meta property="og:url" content="https://corenineai.com/v2/index.html">
-<meta name="theme-color" content="#f1efe9">
+<meta name="theme-color" content="#0a1428">
 <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="./lib/three.r128.min.js"></script>
 <style>
   html { scroll-behavior: smooth; }
-  body { margin:0; background:#f1efe9; color:#161310; font-family:'Syne',sans-serif; overflow-x:hidden; }
-  a { color:#161310; text-decoration:none; }
-  a:hover { color:#ff4d00; }
-  ::selection { background:#ff4d00; color:#f1efe9; }
+  body { margin:0; background:#0a1428; color:#fbfbf9; font-family:'Space Grotesk',sans-serif; overflow-x:hidden; }
+  a { color:#fbfbf9; text-decoration:none; }
+  a:hover { color:#9be7d8; }
+  ::selection { background:#9be7d8; color:#0a1428; }
   @keyframes voltaPulse { 0%,100%{opacity:.9} 50%{opacity:.25} }
-  .row-link { display:grid; grid-template-columns:70px 1fr auto; gap:24px; align-items:baseline; padding:30px 0; border-top:1px solid #cfc9bd; transition:padding-left .35s cubic-bezier(.2,.8,.2,1), color .2s; }
-  .row-link:hover { padding-left:28px; color:#ff4d00; }
-  .row-link .num { font-family:'IBM Plex Mono',monospace; font-size:12px; color:#7a746a; }
+  .row-link { display:grid; grid-template-columns:70px 1fr auto; gap:24px; align-items:baseline; padding:30px 0; border-top:1px solid rgba(255,255,255,.18); transition:padding-left .35s cubic-bezier(.2,.8,.2,1), color .2s; }
+  .row-link:hover { padding-left:28px; color:#9be7d8; }
+  .row-link .num { font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8fa3c4; }
   .row-link .name { font-weight:700; font-size:clamp(28px,4vw,54px); letter-spacing:-0.01em; text-transform:uppercase; }
-  .row-link .tag { font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.1em; color:#7a746a; }
+  .row-link .tag { font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.1em; color:#8fa3c4; }
   @media (max-width:720px){
     header, main > section { padding-left:24px !important; padding-right:24px !important; }
     header { padding-top:20px !important; padding-bottom:0 !important; flex-wrap:wrap; gap:10px; }
@@ -46,7 +46,7 @@
 <div id="volta-canvas" style="position:fixed; inset:0; z-index:0;"></div>
 
 <header style="position:fixed; top:0; left:0; right:0; z-index:20; display:flex; justify-content:space-between; align-items:center; padding:28px 40px;">
-  <div class="brand-mark" style="font-weight:800; font-size:20px; letter-spacing:0.06em;">CORENINE<span style="color:#ff4d00;">*</span></div>
+  <div class="brand-mark" style="display:flex; align-items:center; gap:12px; font-weight:600; font-size:17px; letter-spacing:0.14em;"><svg style="width:30px;height:18px;flex:none" viewBox="0 0 103 63" aria-hidden="true"><rect x="0" y="0" width="11" height="11" rx="2" fill="#fbfbf9"/><rect x="13" y="0" width="11" height="11" rx="2" fill="#fbfbf9"/><rect x="26" y="0" width="11" height="11" rx="2" fill="#fbfbf9"/><rect x="0" y="13" width="11" height="11" rx="2" fill="#fbfbf9"/><rect x="0" y="26" width="11" height="11" rx="2" fill="#fbfbf9"/><rect x="0" y="39" width="11" height="11" rx="2" fill="#fbfbf9"/><rect x="0" y="52" width="11" height="11" rx="2" fill="#fbfbf9"/><rect x="13" y="52" width="11" height="11" rx="2" fill="#fbfbf9"/><rect x="26" y="52" width="11" height="11" rx="2" fill="#fbfbf9"/><rect x="52" y="0" width="11" height="11" rx="2" fill="#fbfbf9"/><rect x="65" y="0" width="11" height="11" rx="2" fill="#fbfbf9"/><rect x="78" y="0" width="11" height="11" rx="2" fill="#fbfbf9"/><rect x="91" y="0" width="11" height="11" rx="2" fill="#fbfbf9"/><rect x="52" y="13" width="11" height="11" rx="2" fill="#fbfbf9"/><rect x="91" y="13" width="11" height="11" rx="2" fill="#fbfbf9"/><rect x="52" y="26" width="11" height="11" rx="2" fill="#fbfbf9"/><rect x="65" y="26" width="11" height="11" rx="2" fill="#fbfbf9"/><rect x="78" y="26" width="11" height="11" rx="2" fill="#fbfbf9"/><rect x="91" y="26" width="11" height="11" rx="2" fill="#fbfbf9"/><rect x="91" y="39" width="11" height="11" rx="2" fill="#fbfbf9"/><rect x="91" y="52" width="11" height="11" rx="2" fill="#9be7d8"/></svg>CORENINE AI</div>
   <nav class="top" style="display:flex; gap:32px; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em;">
     <a href="#work">WORK</a>
     <a href="#studio">STUDIO</a>
@@ -55,8 +55,8 @@
   </nav>
 </header>
 
-<div class="hud" style="position:fixed; right:40px; bottom:36px; z-index:20; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#7a746a; display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
-  <div>FIELD / <span id="shapeName" style="color:#ff4d00;">SPHERE</span></div>
+<div class="hud" style="position:fixed; right:40px; bottom:36px; z-index:20; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; color:#8fa3c4; display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+  <div>FIELD / <span id="shapeName" style="color:#9be7d8;">SPHERE</span></div>
   <div><span id="sectionLabel">01</span> — 06</div>
 </div>
 
@@ -64,64 +64,64 @@
 
   <!-- 01 · SPHERE — hero -->
   <section style="min-height:100vh; display:flex; flex-direction:column; justify-content:flex-end; padding:0 40px 10vh;">
-    <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#ff4d00; margin-bottom:20px;" data-reveal>① PARTICLE FIELD — 30,000 POINTS</div>
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#9be7d8; margin-bottom:20px;" data-reveal>① PARTICLE FIELD — 30,000 POINTS</div>
     <h1 style="margin:0; font-weight:800; font-size:clamp(64px,13vw,220px); line-height:0.9; letter-spacing:-0.02em; text-transform:uppercase;" data-reveal>Work in<br>Motion</h1>
     <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:36px; flex-wrap:wrap; gap:20px;" data-reveal>
-      <p style="margin:0; max-width:420px; font-size:17px; line-height:1.6; font-weight:400; color:#4d463d;">CoreNine AI is an AI transformation studio from Seoul. We teach teams to work with AI, then build the automation that runs the day after. Scroll — the field will follow.</p>
-      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; color:#7a746a; animation:voltaPulse 2.4s ease-in-out infinite;">SCROLL ↓</div>
+      <p style="margin:0; max-width:420px; font-size:17px; line-height:1.6; font-weight:400; color:#b6c2d8;">CoreNine AI is an AI transformation studio from Seoul. We teach teams to work with AI, then build the automation that runs the day after. Scroll — the field will follow.</p>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; color:#8fa3c4; animation:voltaPulse 2.4s ease-in-out infinite;">SCROLL ↓</div>
     </div>
   </section>
 
   <!-- 02 · KNOT — manifesto -->
   <section id="studio" style="min-height:100vh; display:flex; align-items:center; padding:12vh 40px;">
     <div style="max-width:1100px;">
-      <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#ff4d00; margin-bottom:28px;" data-reveal>② THE KNOT</div>
-      <p style="margin:0; font-weight:600; font-size:clamp(30px,4.6vw,64px); line-height:1.15; letter-spacing:-0.015em;" data-reveal>We believe AI is a <span style="color:#ff4d00;">material</span>. We take the tangled, repetitive hours out of your workflow and rebuild them into systems your company owns.</p>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#9be7d8; margin-bottom:28px;" data-reveal>② THE KNOT</div>
+      <p style="margin:0; font-weight:600; font-size:clamp(30px,4.6vw,64px); line-height:1.15; letter-spacing:-0.015em;" data-reveal>We believe AI is a <span style="color:#9be7d8;">material</span>. We take the tangled, repetitive hours out of your workflow and rebuild them into systems your company owns.</p>
     </div>
   </section>
 
   <!-- 03 · TORUS — what we do -->
   <section id="work" style="min-height:100vh; padding:14vh 40px;">
-    <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#ff4d00; margin-bottom:40px;" data-reveal>③ THE TORUS — WHAT WE DO</div>
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#9be7d8; margin-bottom:40px;" data-reveal>③ THE TORUS — WHAT WE DO</div>
     <div style="display:flex; flex-direction:column;" data-reveal>
       <a class="row-link" href="../courses.html"><span class="num">001</span><span class="name">AI Education</span><span class="tag">ROLE-BASED / HANDS-ON</span></a>
       <a class="row-link" href="../build.html"><span class="num">002</span><span class="name">Workflow Automation</span><span class="tag">BUILD &amp; OPERATE</span></a>
       <a class="row-link" href="../build.html#systems"><span class="num">003</span><span class="name">Document Pipelines</span><span class="tag">EXTRACT / VERIFY / RECORD</span></a>
       <a class="row-link" href="../cases.html"><span class="num">004</span><span class="name">AI Agents</span><span class="tag">MULTI-STEP OPERATIONS</span></a>
-      <div style="border-top:1px solid #cfc9bd;"></div>
+      <div style="border-top:1px solid rgba(255,255,255,.18);"></div>
     </div>
   </section>
 
   <!-- 04 · WAVE — how we work -->
   <section style="min-height:100vh; display:flex; align-items:center; padding:12vh 40px;">
     <div style="max-width:1100px;">
-      <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#ff4d00; margin-bottom:28px;" data-reveal>④ THE WAVE — HOW WE WORK</div>
-      <p style="margin:0; font-weight:600; font-size:clamp(30px,4.6vw,64px); line-height:1.15; letter-spacing:-0.015em;" data-reveal>No slide decks. We open your real documents in the first meeting, <span style="color:#ff4d00;">diagnose in days</span>, pilot in weeks — and scale only what the numbers prove.</p>
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#9be7d8; margin-bottom:28px;" data-reveal>④ THE WAVE — HOW WE WORK</div>
+      <p style="margin:0; font-weight:600; font-size:clamp(30px,4.6vw,64px); line-height:1.15; letter-spacing:-0.015em;" data-reveal>No slide decks. We open your real documents in the first meeting, <span style="color:#9be7d8;">diagnose in days</span>, pilot in weeks — and scale only what the numbers prove.</p>
     </div>
   </section>
 
   <!-- 05 · GRID — proof -->
   <section style="min-height:100vh; padding:14vh 40px;">
-    <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#ff4d00; margin-bottom:40px;" data-reveal>⑤ THE GRID — PROOF</div>
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#9be7d8; margin-bottom:40px;" data-reveal>⑤ THE GRID — PROOF</div>
     <div style="display:flex; flex-direction:column;" data-reveal>
       <a class="row-link" href="../cases.html"><span class="num">/01</span><span class="name">Weekly Report 40m → 10m</span><span class="tag">EDUCATION OUTCOME</span></a>
       <a class="row-link" href="../demos/demo2_발주메일_자동입력.html"><span class="num">/02</span><span class="name">Order Entry 4m → 8s</span><span class="tag">LIVE DEMO</span></a>
       <a class="row-link" href="../demos/demo1_사내문서QA봇.html"><span class="num">/03</span><span class="name">Answers with Sources</span><span class="tag">INTERNAL Q&amp;A BOT</span></a>
       <a class="row-link" href="../demos/demo4_구축_운영콘솔.html"><span class="num">/04</span><span class="name">Full Audit Trail</span><span class="tag">OPERATIONS CONSOLE</span></a>
-      <div style="border-top:1px solid #cfc9bd;"></div>
+      <div style="border-top:1px solid rgba(255,255,255,.18);"></div>
     </div>
   </section>
 
   <!-- 06 · HELIX — contact -->
   <section id="contact" style="min-height:100vh; display:flex; flex-direction:column; justify-content:center; padding:12vh 40px;">
-    <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#ff4d00; margin-bottom:28px;" data-reveal>⑥ THE HELIX — GET IN TOUCH</div>
-    <a class="contact-huge" href="mailto:hwkim@corenineai.com" style="font-weight:800; font-size:clamp(52px,10vw,170px); line-height:0.95; letter-spacing:-0.02em; text-transform:uppercase;" data-reveal>Let's<br>Build<span style="color:#ff4d00;">.</span></a>
-    <div style="display:flex; gap:40px; margin-top:8vh; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; color:#4d463d; flex-wrap:wrap;" data-reveal>
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#9be7d8; margin-bottom:28px;" data-reveal>⑥ THE HELIX — GET IN TOUCH</div>
+    <a class="contact-huge" href="mailto:hwkim@corenineai.com" style="font-weight:800; font-size:clamp(52px,10vw,170px); line-height:0.95; letter-spacing:-0.02em; text-transform:uppercase;" data-reveal>Let's<br>Build<span style="color:#9be7d8;">.</span></a>
+    <div style="display:flex; gap:40px; margin-top:8vh; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.12em; color:#b6c2d8; flex-wrap:wrap;" data-reveal>
       <a href="mailto:hwkim@corenineai.com">HWKIM@CORENINEAI.COM</a>
       <a href="tel:01065714281">010-6571-4281</a>
       <a href="../contact.html">CONSULTATION ↗</a>
     </div>
-    <div style="margin-top:10vh; padding-top:24px; border-top:1px solid #cfc9bd; display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7a746a; letter-spacing:0.1em; flex-wrap:wrap; gap:10px;">
+    <div style="margin-top:10vh; padding-top:24px; border-top:1px solid rgba(255,255,255,.18); display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#8fa3c4; letter-spacing:0.1em; flex-wrap:wrap; gap:10px;">
       <span>© 2026 CORENINE AI</span>
       <span>SEOUL, KOREA</span>
     </div>
@@ -204,8 +204,8 @@
     transparent: true, depthWrite: false,
     uniforms: {
       uProg: { value: 0 }, uTime: { value: 0 },
-      uInk: { value: new THREE.Color('#1b1713') },
-      uAccent: { value: new THREE.Color('#ff4d00') },
+      uInk: { value: new THREE.Color('#e8ecf4') },
+      uAccent: { value: new THREE.Color('#9be7d8') },
     },
     vertexShader: `
       attribute vec3 t1; attribute vec3 t2; attribute vec3 t3; attribute vec3 t4; attribute vec3 t5; attribute float aRnd;

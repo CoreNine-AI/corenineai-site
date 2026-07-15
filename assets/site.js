@@ -6,19 +6,24 @@
   const EMAIL = 'hwkim@corenineai.com';
   const PHONE = '010-6571-4281';
 
-  // 심볼: 나인(9): 링 + 라임 꼬리 + 코어. data-tone="dark"면 어두운 배경용 색상.
+  // 심볼: 픽셀 C9 (11x11 블록, rx2). 9의 마지막 픽셀이 액센트로 반전 — "살아있는 비트".
+  // tone="dark"면 어두운 배경용(화이트 + 민트 픽셀).
   function logoSvg(tone) {
-    const core = tone === 'dark' ? '#FFFFFF' : '#0D1B2A';
-    const uid = 'czg' + Math.random().toString(36).slice(2, 7);
+    const dark = tone === 'dark';
+    const cFill = dark ? '#ffffff' : '#111111';
+    const nFill = dark ? '#ffffff' : '#1e4fd8';
+    const accent = dark ? '#9be7d8' : '#1e4fd8';
+    const C = [[0,0],[13,0],[26,0],[0,13],[0,26],[0,39],[0,52],[13,52],[26,52]];
+    const N = [[52,0],[65,0],[78,0],[91,0],[52,13],[91,13],[52,26],[65,26],[78,26],[91,26],[91,39]];
+    const px = (x, y, f) => `<rect x="${x}" y="${y}" width="11" height="11" rx="2" fill="${f}"/>`;
     return `
-    <svg class="logo-mark" viewBox="0 0 88 88" aria-hidden="true">
-      <defs><linearGradient id="${uid}" x1="0" y1="1" x2="1" y2="0">
-        <stop offset="0" stop-color="#047857"/><stop offset="1" stop-color="#0BB985"/>
-      </linearGradient></defs>
-      <g transform="translate(44,38)"><circle r="21" fill="none" stroke="url(#${uid})" stroke-width="11"/><path d="M 21 2 L 21 26" fill="none" stroke="#C9F24E" stroke-width="11" stroke-linecap="round"/><circle r="9" fill="${core}"/></g>
+    <svg class="logo-mark" viewBox="0 0 103 63" aria-hidden="true">
+      ${C.map(([x, y]) => px(x, y, cFill)).join('')}
+      ${N.map(([x, y]) => px(x, y, nFill)).join('')}
+      ${px(91, 52, accent)}
     </svg>`;
   }
-  const WORDMARK = `<span class="name">Core<b>Nine</b><em>AI</em></span>`;
+  const WORDMARK = `<span class="name">CORENINE&nbsp;<em>AI</em></span>`;
 
   const NAV_ITEMS = [
     ['courses.html',  'courses',  '교육 과정'],
@@ -106,7 +111,7 @@
       </div>
       <div class="wrap foot-note">
         <div class="fn-left">
-          <span class="fn-mark">Core<b>Nine</b> <em>AI</em></span>
+          <span class="fn-mark">CORENINE <em>AI</em></span>
           <span class="fn-sep" aria-hidden="true"></span>
           <span>© 2026 CoreNine AI. All rights reserved.</span>
         </div>

@@ -14,7 +14,7 @@
   ];
   const SCOPE_ONLY = ['추출 규칙', '권한 관리']; // 데모 범위 밖 — 토스트 안내
 
-  const LOGO = `<svg viewBox="0 0 88 88"><g transform="translate(44,38)"><circle r="21" fill="none" stroke="#0BA678" stroke-width="11"/><path d="M 21 2 L 21 26" fill="none" stroke="#C9F24E" stroke-width="11" stroke-linecap="round"/><circle r="9" fill="#0D1B2A"/></g></svg>`;
+  const LOGO = `<svg viewBox="0 0 103 63"><rect x="0" y="0" width="11" height="11" rx="2" fill="#111111"/><rect x="13" y="0" width="11" height="11" rx="2" fill="#111111"/><rect x="26" y="0" width="11" height="11" rx="2" fill="#111111"/><rect x="0" y="13" width="11" height="11" rx="2" fill="#111111"/><rect x="0" y="26" width="11" height="11" rx="2" fill="#111111"/><rect x="0" y="39" width="11" height="11" rx="2" fill="#111111"/><rect x="0" y="52" width="11" height="11" rx="2" fill="#111111"/><rect x="13" y="52" width="11" height="11" rx="2" fill="#111111"/><rect x="26" y="52" width="11" height="11" rx="2" fill="#111111"/><rect x="52" y="0" width="11" height="11" rx="2" fill="#1e4fd8"/><rect x="65" y="0" width="11" height="11" rx="2" fill="#1e4fd8"/><rect x="78" y="0" width="11" height="11" rx="2" fill="#1e4fd8"/><rect x="91" y="0" width="11" height="11" rx="2" fill="#1e4fd8"/><rect x="52" y="13" width="11" height="11" rx="2" fill="#1e4fd8"/><rect x="91" y="13" width="11" height="11" rx="2" fill="#1e4fd8"/><rect x="52" y="26" width="11" height="11" rx="2" fill="#1e4fd8"/><rect x="65" y="26" width="11" height="11" rx="2" fill="#1e4fd8"/><rect x="78" y="26" width="11" height="11" rx="2" fill="#1e4fd8"/><rect x="91" y="26" width="11" height="11" rx="2" fill="#1e4fd8"/><rect x="91" y="39" width="11" height="11" rx="2" fill="#1e4fd8"/><rect x="91" y="52" width="11" height="11" rx="2" fill="#1e4fd8"/></svg>`;
 
   window.opsToast = function (msg) {
     let t = document.getElementById('demoToast');
@@ -74,7 +74,7 @@
 
     const asideEl = document.createElement('aside');
     asideEl.innerHTML = `
-      <div class="brand">${LOGO}<span>Core<b>Nine</b> Ops</span></div>
+      <div class="brand">${LOGO}<span style="font-weight:700;letter-spacing:.08em">CORENINE <b>OPS</b></span></div>
       <div class="side-label">운영</div><div class="side">${groups['운영'].join('')}</div>
       <div class="side-label">분석</div><div class="side">${groups['분석'].join('')}</div>
       <div class="side-label">설정</div><div class="side">${scopeLinks}</div>

@@ -3,7 +3,7 @@
    demo4_* 페이지들이 공유한다. 페이지 고유 스타일만 각 파일에 둔다.
    ============================================================ */
 :root{
-  --brand:#0BA678;--brand-strong:#047857;--brand-soft:#E4F7EF;--lime:#C9F24E;
+  --brand:#1e4fd8;--brand-strong:#1e4fd8;--brand-soft:#e3eafc;--lime:#9be7d8;
   --ink:#0D1B2A;--sub:#46566A;--mute:#8593A6;--line:#E4E9F0;--bg:#F2F5F8;
   --red:#E5484D;--red-soft:#FDEBEC;--amber:#B7791F;--amber-soft:#FDF3E0;
   --blue:#1D6FD6;--blue-soft:#EAF3FF;
@@ -26,7 +26,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14p
 /* 사이드바 */
 aside{background:#fff;border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column}
 .brand{display:flex;align-items:center;gap:9px;padding:0 8px 20px;border-bottom:1px solid var(--line)}
-.brand svg{width:27px;height:27px}
+.brand svg{width:32px;height:20px}
 .brand span{font-size:16px;font-weight:500;letter-spacing:-.04em}
 .brand span b{font-weight:800}
 .side-label{font-size:10.5px;font-weight:800;letter-spacing:.12em;color:var(--mute);margin:20px 8px 8px}
@@ -57,7 +57,7 @@ main{padding:24px 28px 40px;max-width:1200px}
 /* KPI */
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:20px}
 .kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;position:relative;overflow:hidden}
-.kpi::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#047857,#0BB985)}
+.kpi::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#1e4fd8,#1e4fd8)}
 .kpi .k{font-size:12px;font-weight:700;color:var(--mute)}
 .kpi .v{font-size:27px;font-weight:800;letter-spacing:-.03em;margin-top:6px;font-variant-numeric:tabular-nums}
 .kpi .v small{font-size:13px;font-weight:700;color:var(--mute)}

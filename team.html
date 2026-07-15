@@ -16,88 +16,97 @@
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="assets/style.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   /* ============================================================
-     TEAM — 이 페이지만 에디토리얼(잡지 인터뷰) 형식.
-     차분한 지면 위에서, 존댓말로 정확하게 소개한다.
+     TEAM — Pixel C9 브랜드.
+     페이퍼 지면 + 딥 블루 + 모노 라벨. 존댓말로 정확하게 소개한다.
      ============================================================ */
-  .t-hero{background:#FBF9F5;border-bottom:1px solid #ECE7DD;padding:104px 0 78px}
-  .t-hero .paper{max-width:760px}
-  .t-hero .eyeb{font-size:12.5px;font-weight:700;letter-spacing:.2em;color:#A39B8B}
-  .t-hero h1{margin-top:24px;font-family:'Noto Serif KR',serif;font-weight:700;
-    font-size:clamp(30px,4.3vw,44px);line-height:1.55;letter-spacing:-.015em;color:#1E1B14}
-  .t-hero h1 em{font-style:normal;color:var(--brand-strong)}
-  .t-hero .sub{margin-top:22px;font-size:16.5px;color:#6E6656;line-height:1.95;max-width:640px}
-  .t-hero .sub b{color:#2A2620;font-weight:700}
-
+  body{background:#fbfbf9}
   .paper{max-width:760px;margin:0 auto;padding:0 24px}
-  .t-body{background:#FBF9F5;padding:72px 0 40px}
 
-  /* 학교 로고 — 라벨 없이 조용하게 */
+  /* 픽셀 도트 페이드 — 브랜드 유일의 장식 언어 */
+  .px-fade{display:inline-flex;gap:8px}
+  .px-fade i{width:9px;height:9px;border-radius:2px;background:var(--brand);display:block}
+  .px-fade i:nth-child(2){opacity:.6}
+  .px-fade i:nth-child(3){opacity:.35}
+  .px-fade i:nth-child(4){opacity:.15}
+
+  .t-hero{border-bottom:1px solid #e5e5e2;padding:104px 0 76px}
+  .t-hero .eyeb{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.2em;color:var(--brand)}
+  .t-hero h1{margin-top:26px;font-weight:700;font-size:clamp(29px,4.2vw,42px);line-height:1.5;letter-spacing:-.02em;color:#111}
+  .t-hero h1 em{font-style:normal;color:var(--brand)}
+  .t-hero .sub{margin-top:22px;font-size:16.5px;color:#555;line-height:2;max-width:640px}
+  .t-hero .sub b{color:#111;font-weight:600}
+  .t-hero .px-fade{margin-bottom:26px}
+
+  .t-body{padding:72px 0 40px}
+
+  /* 학교 — 조용한 한 줄 스트립 */
   .logo-strip{display:flex;align-items:center;justify-content:space-between;gap:26px;
-    padding:36px 42px;background:#fff;border:1px solid #ECE7DD;border-radius:16px}
-  .logo-strip img{height:60px;width:auto;object-fit:contain}
+    padding:32px 40px;background:#fff;border:1px solid #e5e5e2;border-radius:12px}
+  .logo-strip img{height:56px;width:auto;object-fit:contain}
   @media (max-width:600px){
-    .logo-strip{flex-wrap:wrap;justify-content:center;gap:30px;padding:28px 22px}
-    .logo-strip img{height:46px}
+    .logo-strip{flex-wrap:wrap;justify-content:center;gap:26px;padding:26px 20px}
+    .logo-strip img{height:44px}
   }
 
-  /* 섹션 라벨 + 본문 */
+  /* 섹션 */
   .t-sec{margin-top:84px}
-  .t-sec .lab{font-size:12px;font-weight:800;letter-spacing:.2em;color:var(--brand-strong)}
-  .t-sec h2{margin-top:14px;font-family:'Noto Serif KR',serif;font-weight:700;
-    font-size:clamp(22px,2.8vw,29px);line-height:1.6;letter-spacing:-.01em;color:#1E1B14}
-  .t-sec .prose{margin-top:22px;font-size:16px;color:#4A4437;line-height:2.05}
+  .t-sec .lab{font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.2em;color:var(--brand)}
+  .t-sec h2{margin-top:14px;font-weight:700;font-size:clamp(22px,2.8vw,29px);line-height:1.55;letter-spacing:-.02em;color:#111}
+  .t-sec .prose{margin-top:20px;font-size:16px;color:#444;line-height:2.05}
   .t-sec .prose p{margin:0 0 22px}
-  .t-sec .prose b{color:#1E1B14;font-weight:700}
+  .t-sec .prose b{color:#111;font-weight:600}
 
-  /* 인용 */
-  .pull{margin:64px 0;padding:34px 38px;background:#fff;border:1px solid #ECE7DD;border-radius:16px;
-    font-family:'Noto Serif KR',serif;font-weight:600;font-size:clamp(19px,2.4vw,23px);
-    line-height:1.8;color:#1E1B14;letter-spacing:-.01em;text-align:center}
-  .pull em{font-style:normal;color:var(--brand-strong)}
+  /* 인용 — 블루 패널 */
+  .pull{margin:64px 0;padding:36px 40px;background:var(--brand);border-radius:12px;
+    font-weight:600;font-size:clamp(18px,2.3vw,22px);line-height:1.8;color:#fff;letter-spacing:-.01em}
+  .pull em{font-style:normal;color:var(--lime)}
 
   /* 전공 목록 */
-  .majors{margin-top:28px;border-top:1px solid #E5DFD2}
+  .majors{margin-top:28px;border-top:2px solid #111}
   .mj{display:grid;grid-template-columns:128px 1fr;gap:18px;padding:19px 4px;
-    border-bottom:1px solid #E5DFD2;align-items:baseline}
-  .mj b{font-size:16px;font-weight:800;color:#1E1B14;letter-spacing:-.01em}
-  .mj span{font-size:14.5px;color:#6E6656;line-height:1.9}
+    border-bottom:1px solid #e5e5e2;align-items:baseline}
+  .mj b{font-size:15.5px;font-weight:700;color:#111;letter-spacing:-.01em}
+  .mj span{font-size:14.5px;color:#666;line-height:1.9}
   @media (max-width:600px){.mj{grid-template-columns:1fr;gap:4px}}
 
-  /* 일하는 방식 3항 */
-  .ways{margin-top:28px;display:grid;gap:14px}
-  .way{background:#fff;border:1px solid #ECE7DD;border-radius:14px;padding:24px 28px;
-    display:grid;grid-template-columns:44px 1fr;gap:18px;align-items:start}
-  .way .n{width:36px;height:36px;border-radius:11px;background:var(--brand-soft);
-    color:var(--brand-strong);font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center}
-  .way b{font-size:15.5px;color:#1E1B14}
-  .way p{margin-top:6px;font-size:14px;color:#6E6656;line-height:1.85}
+  /* CORE — 마음가짐 3항 */
+  .cores{margin-top:28px;display:grid;gap:14px}
+  .core{background:#fff;border:1px solid #e5e5e2;border-radius:12px;padding:26px 30px;
+    display:grid;grid-template-columns:76px 1fr;gap:20px;align-items:start;
+    transition:border-color var(--dur,180ms) ease}
+  .core:hover{border-color:var(--brand)}
+  .core .n{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.16em;color:var(--brand);padding-top:3px}
+  .core b{font-size:16px;color:#111;letter-spacing:-.01em}
+  .core p{margin-top:7px;font-size:14px;color:#666;line-height:1.9}
+  @media (max-width:600px){.core{grid-template-columns:1fr;gap:8px;padding:22px 20px}}
 
-  /* 마무리 CTA */
-  .t-cta{background:#FBF9F5;padding:88px 0 120px}
-  .t-cta .box{max-width:760px;margin:0 auto;padding:48px 44px;text-align:center;
-    background:linear-gradient(140deg,var(--forest) 0%,var(--forest-2) 100%);border-radius:20px;color:#fff}
-  .t-cta .box .t{font-family:'Noto Serif KR',serif;font-size:22px;font-weight:600;line-height:1.75}
+  /* 마무리 CTA — 네이비 + 민트 픽셀 */
+  .t-cta{padding:88px 0 120px}
+  .t-cta .box{max-width:760px;margin:0 auto;padding:52px 46px;text-align:center;
+    background:var(--forest);border-radius:14px;color:#fff;position:relative;overflow:hidden}
+  .t-cta .box .px-fade{justify-content:center;margin-bottom:24px}
+  .t-cta .box .px-fade i{background:var(--lime)}
+  .t-cta .box .t{font-size:21px;font-weight:700;line-height:1.75;letter-spacing:-.01em}
   .t-cta .box .t em{font-style:normal;color:var(--lime)}
-  .t-cta .box p{margin-top:14px;font-size:14.5px;color:#A9C6B9;line-height:1.85}
+  .t-cta .box p{margin-top:14px;font-size:14.5px;color:#8fa3c4;line-height:1.85}
   .t-cta .box .btn{margin-top:26px}
-  @media (max-width:600px){.t-cta .box{padding:36px 24px;margin:0 24px}}
+  @media (max-width:600px){.t-cta .box{padding:38px 24px;margin:0 24px}}
 </style>
 </head>
 <body data-page="team">
 
 <header class="t-hero">
   <div class="paper">
-    <div class="eyeb">ABOUT CORENINE AI</div>
-    <h1>AI가 세상의 비효율을 해결할 것이라고<br>믿는 사람들이 모였습니다. <em>진심으로요.</em></h1>
+    <div class="px-fade" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <div class="eyeb">ABOUT — CORENINE AI</div>
+    <h1>AI가 세상의 비효율을 해결할 것이라고 믿는 사람들이 모였습니다. <em>진심으로요.</em></h1>
     <p class="sub">
-      서울대, KAIST, 연세대, 고려대에서 컴퓨터공학, 의학, 수의학, 건축공학, 경영학을
-      공부했습니다. 전공도 진로도 서로 달랐지만, <b>AI에 대한 확신 하나</b>로 모여
-      회사를 시작했습니다. 저희가 어떤 사람들이고 왜 이 일을 하는지, 과장 없이 말씀드리겠습니다.
+      고등학교 시절부터 함께해 온 친구들이 한 팀이 되었습니다.
+      서울대, KAIST, 연세대, 고려대에서 컴퓨터공학, 의학, 수의학, 건축공학, 경영학을 공부하며
+      각자의 길을 걷다가, <b>AI에 대한 확신 하나</b>로 다시 모여 회사를 시작했습니다.
+      저희가 어떤 사람들이고 왜 이 일을 하는지, 과장 없이 말씀드리겠습니다.
     </p>
   </div>
 </header>
@@ -114,7 +123,7 @@
 
     <div class="t-sec">
       <div class="lab">WHY — 왜 이 일을 하는가</div>
-      <h2>기술이 가장 크게 쓰일 곳은,<br>화려한 무대가 아니라 현장이라고 생각했습니다</h2>
+      <h2>기술이 가장 크게 쓰일 곳은, 화려한 무대가 아니라 현장이라고 생각했습니다</h2>
       <div class="prose">
         <p>
           저희는 각자 안정적인 진로가 있던 사람들입니다. 병원에 있었고, 연구실에 있었고,
@@ -138,8 +147,7 @@
     </div>
 
     <div class="pull">
-      세상의 비효율은 실리콘밸리가 아니라<br>
-      <em>한국 회사의 서류 더미</em> 속에 있다고 믿습니다.
+      세상의 비효율은 실리콘밸리가 아니라 <em>한국 회사의 서류 더미</em> 속에 있다고 믿습니다.
     </div>
 
     <div class="t-sec" style="margin-top:0">
@@ -161,12 +169,12 @@
     </div>
 
     <div class="t-sec">
-      <div class="lab">HOW — 어떻게 일하는가</div>
-      <h2>세 가지 원칙은 양보하지 않습니다</h2>
-      <div class="ways">
-        <div class="way"><span class="n">1</span><div><b>말 대신 화면으로 보여드립니다</b><p>미팅에서 파워포인트를 켜지 않습니다. 귀사의 실제 서류 몇 장으로, 되는지 안 되는지를 그 자리에서 판단해 드립니다.</p></div></div>
-        <div class="way"><span class="n">2</span><div><b>"전부 자동"을 약속하지 않습니다</b><p>확실한 것만 자동으로 처리하고, 애매한 것은 사람에게 보내는 시스템을 만듭니다. 그래야 실무에서 오래 살아남는다는 것을 알고 있습니다.</p></div></div>
-        <div class="way"><span class="n">3</span><div><b>작게 검증하고, 숫자로 확인된 것만 넓힙니다</b><p>처음부터 큰 계약을 제안하지 않습니다. 파일럿으로 정확도와 절감 시간을 검증한 뒤에, 확대 여부를 함께 결정합니다.</p></div></div>
+      <div class="lab">CORE — 어떤 마음으로 일하는가</div>
+      <h2>기술보다 먼저 지키는 세 가지 마음입니다</h2>
+      <div class="cores">
+        <div class="core"><span class="n">CORE 01</span><div><b>내 회사라면 어떻게 할까를 먼저 묻습니다</b><p>기능을 팔고 떠나는 것이 아니라, 저희가 그 자리에 앉아 일한다는 마음으로 시스템을 만듭니다. 그래서 화려한 것보다 내일 아침에도 돌아가는 것을 먼저 챙깁니다.</p></div></div>
+        <div class="core"><span class="n">CORE 02</span><div><b>되는 것과 안 되는 것을 정직하게 말합니다</b><p>기대를 부풀려 계약을 따기보다, 안 되는 것을 안 된다고 말해 신뢰를 얻는 쪽을 택합니다. 과장 없이 시작한 프로젝트만이 끝까지 간다고 믿습니다.</p></div></div>
+        <div class="core"><span class="n">CORE 03</span><div><b>숫자로 증명될 때까지가 저희의 일입니다</b><p>시스템을 넘겨드리는 순간이 아니라, 절감된 시간이 숫자로 확인되는 순간을 일의 끝으로 정했습니다.</p></div></div>
       </div>
     </div>
 
@@ -192,7 +200,8 @@
 
 <div class="t-cta">
   <div class="box">
-    <div class="t">어떤 사람들인지 궁금하시다면,<br><em>20분</em>만 내주시면 충분합니다.</div>
+    <div class="px-fade" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <div class="t">어떤 사람들인지 궁금하시다면, <em>20분</em>이면 충분합니다.</div>
     <p>파워포인트 없이 실제 화면만 들고 찾아뵙겠습니다. 보시고 판단하셔도 늦지 않습니다.</p>
     <a class="btn lime" href="contact.html">20분 미팅 신청하기</a>
   </div>
